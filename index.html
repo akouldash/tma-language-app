@@ -3,12 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Language Learning App</title>
+  <title>Language Learning MiniApp</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
   <style>
+    /* ========================================================= */
+    /* ۱. متغیرهای تم رنگی (تاریک و روشن)                        */
+    /* ========================================================= */
     :root {
       --bg-main: #0f172a;
-      --card-bg: rgba(30, 41, 59, 0.7);
+      --card-bg: rgba(30, 41, 59, 0.75);
       --card-border: rgba(255, 255, 255, 0.08);
       --text-main: #f8fafc;
       --text-sub: #94a3b8;
@@ -21,8 +25,8 @@
 
     [data-theme="light"] {
       --bg-main: #f1f5f9;
-      --card-bg: rgba(255, 255, 255, 0.85);
-      --card-border: rgba(0, 0, 0, 0.05);
+      --card-bg: rgba(255, 255, 255, 0.9);
+      --card-border: rgba(0, 0, 0, 0.06);
       --text-main: #0f172a;
       --text-sub: #64748b;
       --primary: #7c3aed;
@@ -32,59 +36,115 @@
       --shadow: 0 8px 24px 0 rgba(149, 157, 165, 0.15);
     }
 
+    /* ========================================================= */
+    /* ۲. استایل‌های عمومی و بدنه برنامه                          */
+    /* ========================================================= */
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; transition: all 0.25s ease; }
-    body { background: var(--bg-main); color: var(--text-main); padding-bottom: 90px; user-select: none; }
+    body { background: var(--bg-main); color: var(--text-main); padding-bottom: 100px; user-select: none; }
     .container { padding: 16px; max-width: 480px; margin: 0 auto; }
 
-    /* Top Bar Header */
-    .top-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; margin-bottom: 12px; }
-    .theme-toggle-btn { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; box-shadow: var(--shadow); }
+    /* هدر بالای برنامه (عنوان + دکمه تم) */
+    .top-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 8px; margin-bottom: 12px; }
+    .theme-toggle-btn { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; box-shadow: var(--shadow); color: var(--text-main); }
 
-    /* Modern Glass Card */
+    /* کارت‌های شیشه‌ای (Glassmorphism) */
     .card { background: var(--card-bg); backdrop-filter: blur(12px); border: 1px solid var(--card-border); border-radius: 20px; padding: 18px; margin-bottom: 14px; box-shadow: var(--shadow); }
 
-    /* Countdown Box */
+    /* باکس معکوس‌شمار زمان تست */
     .timer-box { display: flex; justify-content: space-around; direction: ltr; margin-top: 10px; text-align: center; }
     .timer-unit { background: rgba(0,0,0,0.15); padding: 8px 12px; border-radius: 12px; min-width: 60px; }
     .timer-val { font-size: 18px; font-weight: bold; color: var(--accent); }
     .timer-lbl { font-size: 10px; color: var(--text-sub); }
 
-    /* Tabs Engine */
+    /* سیستم تب‌ها و صفحات */
     .tab-content { display: none; }
-    .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+    .tab-content.active { display: block; animation: fadeIn 0.25s ease-in-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* Floating Curved Bottom Bar */
-    .nav-bar { position: fixed; bottom: 16px; left: 16px; right: 16px; max-width: 448px; margin: 0 auto; background: var(--card-bg); backdrop-filter: blur(16px); border: 1px solid var(--card-border); border-radius: 28px; display: flex; justify-content: space-around; align-items: center; height: 68px; box-shadow: var(--shadow); z-index: 100; }
-    .nav-item { border: none; background: none; color: var(--text-sub); font-size: 11px; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; flex: 1; }
-    .nav-item.active { color: var(--primary); font-weight: bold; }
-    
-    /* Center Learn Button (Floating Action Style) */
-    .nav-item.learn-center { position: relative; top: -14px; }
-    .nav-item.learn-center .icon-wrap { background: var(--primary-gradient); color: #fff; width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4); border: 4px solid var(--bg-main); }
+    /* ========================================================= */
+    /* ۳. منوی شناور پایینی (بدون کادر پس‌زمینه و بدون متن)        */
+    /* ========================================================= */
+    .nav-bar { 
+      position: fixed; 
+      bottom: 20px; 
+      left: 0; 
+      right: 0; 
+      max-width: 320px; 
+      margin: 0 auto; 
+      background: transparent; /* کادر و پس‌زمینه منو حذف شد */
+      border: none;
+      display: flex; 
+      justify-content: space-around; 
+      align-items: center; 
+      height: 60px; 
+      z-index: 100; 
+      pointer-events: none; /* جلوگیری از مسدود شدن لمس نقاط خالی */
+    }
 
-    /* Buttons & Settings Accordion */
+    .nav-item { 
+      pointer-events: auto; /* فعال‌سازی لمس روی خود دکمه‌ها */
+      border: 1px solid var(--card-border); 
+      background: var(--card-bg); 
+      color: var(--text-sub); 
+      width: 52px; 
+      height: 52px; 
+      border-radius: 50%; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      font-size: 22px; 
+      cursor: pointer; 
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .nav-item.active { 
+      color: var(--primary); 
+      border-color: var(--primary);
+      transform: translateY(-4px) scale(1.05);
+    }
+
+    /* دکمه برجسته وسط (آموزش) */
+    .nav-item.learn-center { 
+      width: 64px; 
+      height: 64px; 
+      background: var(--primary-gradient); 
+      color: #fff; 
+      font-size: 28px; 
+      box-shadow: 0 10px 25px rgba(139, 92, 246, 0.5); 
+      border: 3px solid var(--bg-main); 
+      transform: translateY(-8px);
+    }
+    
+    .nav-item.learn-center.active {
+      transform: translateY(-12px) scale(1.08);
+    }
+
+    /* فرم‌ها و دکمه‌ها */
     .btn { width: 100%; padding: 14px; background: var(--primary-gradient); color: #fff; border: none; border-radius: 14px; font-weight: bold; cursor: pointer; margin-top: 8px; }
     .btn-danger { background: var(--danger); }
     .setting-group { margin-bottom: 12px; }
     .setting-title { font-weight: bold; font-size: 14px; margin-bottom: 8px; color: var(--accent); }
     .input-field { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--card-border); background: rgba(0,0,0,0.1); color: var(--text-main); margin-bottom: 8px; }
 
-    /* Modal Popup */
-    .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 200; align-items: center; justify-content: center; padding: 16px; }
+    /* پاپ‌آپ حذف حساب */
+    .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); z-index: 200; align-items: center; justify-content: center; padding: 16px; }
     .modal-content { background: var(--bg-main); border: 1px solid var(--card-border); border-radius: 24px; padding: 20px; max-width: 360px; text-align: center; }
   </style>
 </head>
 <body data-theme="dark">
 
   <div class="container">
-    <!-- Top Header -->
+    <!-- هدر بالای برنامه -->
     <div class="top-header">
       <div style="font-size: 18px; font-weight: bold;">💎 Language Core</div>
-      <button class="theme-toggle-btn" onclick="toggleTheme()" id="theme-btn">☀️</button>
+      <!-- دکمه تغییر تم نمادین (خورشید / ماه) -->
+      <button class="theme-toggle-btn" id="theme-btn" onclick="toggleTheme()">☀️</button>
     </div>
 
-    <!-- 1. DASHBOARD & PROFILE TAB (Right Tab) -->
+    <!-- ========================================================= -->
+    <!-- صفحه ۱: داشبورد و پروفایل (سمت راست منو)                   -->
+    <!-- ========================================================= -->
     <div id="tab-dashboard" class="tab-content active">
       <div class="card" style="display: flex; align-items: center; gap: 14px;">
         <div style="width: 50px; height: 50px; border-radius: 50%; background: var(--primary-gradient); display: flex; align-items: center; justify-content: center; font-size: 22px; color: white;">👤</div>
@@ -94,7 +154,7 @@
         </div>
       </div>
 
-      <!-- Subscription Countdown Card -->
+      <!-- باکس شمارش معکوس پایان اشتراک -->
       <div class="card">
         <p style="font-size: 13px; color: var(--text-sub);">⏳ زمان باقی‌مانده از تست رایگان (۷ روز):</p>
         <div class="timer-box">
@@ -105,90 +165,90 @@
         </div>
       </div>
 
-      <!-- Analytics Preview Card -->
+      <!-- وضعیت پیشرفت -->
       <div class="card">
-        <h3>📊 وضعیت پیشرفت یادگیری</h3>
-        <p style="font-size: 13px; color: var(--text-sub); margin-top: 6px;">پیش‌بینی هوش مصنوعی: با ادامه روند فعلی، تا ۱۵ روز آینده داستان‌های کوتاه را متوجه خواهید شد.</p>
+        <h3>📊 وضعیت یادگیری</h3>
+        <p style="font-size: 13px; color: var(--text-sub); margin-top: 6px;">پس از شروع اولین درس، نمودار و آمار پیشرفت شما در این بخش نمایش داده خواهد شد.</p>
       </div>
 
-      <!-- Danger Zone -->
+      <!-- بخش حذف حساب کاربری -->
       <div class="card" style="border-color: rgba(239, 68, 68, 0.3);">
         <button class="btn btn-danger" onclick="openDeleteModal()">🗑️ حذف حساب کاربری و تمام داده‌ها</button>
       </div>
     </div>
 
-    <!-- 2. LEARN TAB (Center Main) -->
+    <!-- ========================================================= -->
+    <!-- صفحه ۲: مرکز آموزش (دکمه وسط منو)                          -->
+    <!-- ========================================================= -->
     <div id="tab-learn" class="tab-content">
       <div class="card" style="text-align: center; padding: 30px 16px;">
-        <h2>🎯 مسیر اختصاصی شما</h2>
-        <p style="color: var(--text-sub); margin: 12px 0;">جهت ساخت برنامه درسی مبتنی بر هوش مصنوعی آماده‌اید؟</p>
+        <h2>🎓 مسیر اختصاصی آموزش</h2>
+        <p style="color: var(--text-sub); margin: 12px 0; font-size: 13px;">آماده شروع تعیین سطح و دریافت برنامه هوش مصنوعی هستید؟</p>
         <button class="btn" onclick="alert('اتصال به موتور هوش مصنوعی در گام بعدی انجام خواهد شد.')">شروع مسیر آموزش</button>
       </div>
     </div>
 
-    <!-- 3. SETTINGS TAB (Left Tab) -->
+    <!-- ========================================================= -->
+    <!-- صفحه ۳: تنظیمات (سمت چپ منو)                              -->
+    <!-- ========================================================= -->
     <div id="tab-settings" class="tab-content">
       <div class="card">
         <h3>⚙️ تنظیمات برنامه</h3>
         
-        <!-- Group 1: Display -->
+        <!-- گروه ۱: نمایش -->
         <div class="setting-group" style="margin-top: 14px;">
           <div class="setting-title">🎨 1. تنظیمات نمایش</div>
           <select class="input-field"><option>فونت وزیر متن (پیش‌فرض)</option><option>فونت یکان</option></select>
           <select class="input-field"><option>اندازه متن: متوسط</option><option>اندازه متن: بزرگ</option></select>
         </div>
 
-        <!-- Group 2: Audio -->
+        <!-- گروه ۲: صوت -->
         <div class="setting-group">
           <div class="setting-title">🔊 2. تنظیمات صوت</div>
-          <label style="font-size: 12px; display: block; margin-bottom: 4px;">انتخاب شخصیت گوینده (۱۰ مدل):</label>
           <select class="input-field">
-            <option>1. الکس (مرد - انگلیسی رسمی)</option>
-            <option>2. سارا (زن - انگلیسی گویش آمریکایی)</option>
-            <option>3. معلم هوشمند (طنز)</option>
+            <option>1. الکس (مرد - رسمی)</option>
+            <option>2. سارا (زن - گویش آمریکایی)</option>
           </select>
         </div>
 
-        <!-- Group 3: Notifications -->
+        <!-- گروه ۳: یادآوری -->
         <div class="setting-group">
           <div class="setting-title">🔔 3. یادآوری روزانه</div>
           <input type="time" class="input-field" value="20:00">
         </div>
 
-        <!-- Group 4: Privacy -->
+        <!-- گروه ۴: حریم خصوصی -->
         <div class="setting-group">
           <div class="setting-title">🛡️ 4. حریم خصوصی</div>
           <p style="font-size: 11px; color: var(--text-sub);">تمامی داده‌های تمرینی شما به‌صورت رمزنگاری‌شده در سرور ذخیره می‌شود.</p>
         </div>
 
-        <!-- Group 5: About -->
+        <!-- گروه ۵: درباره ما -->
         <div class="setting-group">
-          <div class="setting-title">ℹ️ 5. درباره ما و پشتیبانی</div>
-          <p style="font-size: 11px; color: var(--text-sub);">نسخه مینی‌آپ: 2.0.0 (پشتیبانی ۲۴ ساعته)</p>
+          <div class="setting-title">ℹ️ 5. درباره ما</div>
+          <p style="font-size: 11px; color: var(--text-sub);">نسخه مینی‌آپ: 2.1.0 (پشتیبانی ۲۴ ساعته)</p>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Bottom Floating Navbar -->
+  <!-- ========================================================= -->
+  <!-- منوی شناور پایینی (بدون کادر پس‌زمینه و بدون متن زیر آیکون‌ها) -->
+  <!-- ========================================================= -->
   <nav class="nav-bar">
-    <button class="nav-item" onclick="switchTab('settings', this)">
-      <span style="font-size: 18px;">⚙️</span>
-      <span>تنظیمات</span>
-    </button>
-    
-    <button class="nav-item learn-center" onclick="switchTab('learn', this)">
-      <div class="icon-wrap">🎓</div>
-      <span>آموزش</span>
-    </button>
+    <!-- دکمه تنظیمات (سمت چپ) -->
+    <button class="nav-item" onclick="switchTab('settings', this)" title="تنظیمات">⚙️</button>
 
-    <button class="nav-item active" onclick="switchTab('dashboard', this)">
-      <span style="font-size: 18px;">📊</span>
-      <span>داشبورد</span>
-    </button>
+    <!-- دکمه مرکزی آموزش (برجسته) -->
+    <button class="nav-item learn-center" onclick="switchTab('learn', this)" title="آموزش">🎓</button>
+
+    <!-- دکمه داشبورد و پروفایل با آیکون کاربر (سمت راست) -->
+    <button class="nav-item active" onclick="switchTab('dashboard', this)" title="داشبورد و پروفایل">👤</button>
   </nav>
 
-  <!-- Delete Account Modal Popup -->
+  <!-- ========================================================= -->
+  <!-- پاپ‌آپ هشدار حذف حساب کاربری                              -->
+  <!-- ========================================================= -->
   <div class="modal" id="delete-modal">
     <div class="modal-content">
       <h3 style="color: var(--danger); margin-bottom: 10px;">⚠️ حذف حساب کاربری</h3>
@@ -200,34 +260,74 @@
     </div>
   </div>
 
+  <!-- ========================================================= -->
+  <!-- کدهای JavaScript (با کامنت‌گذاری کامل جهت دیباگ)              -->
+  <!-- ========================================================= -->
   <script>
+    // تنظیمات تلگرام
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // ⚠️ آدرس وب‌هوکی که از n8n کپی کردید را اینجا بگذارید
+    // آدرس‌های وب‌فوک n8n
     const N8N_AUTH_URL = "https://sahand212.app.n8n.cloud/webhook/auth"; 
-    const N8N_DELETE_URL = https://sahand212.app.n8n.cloud/webhook/delete-account";
+    const N8N_DELETE_URL = "https://sahand212.app.n8n.cloud/webhook/delete-account";
 
-    let trialEndsAt = null;
     let currentUserTelegramId = null;
 
+    // =========================================================
+    // ۱. تابع تعویض صفحات (Navigation Engine) - رفع مشکل کلیدها
+    // =========================================================
     function switchTab(tabId, el) {
-      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-      document.getElementById('tab-' + tabId).classList.add('active');
-      if (el) el.classList.add('active');
+      try {
+        // مخفی کردن تمام تب‌ها
+        const allTabs = document.querySelectorAll('.tab-content');
+        allTabs.forEach(tab => tab.classList.remove('active'));
+
+        // غیرفعال کردن استایل تمام دکمه‌های منو
+        const allNavItems = document.querySelectorAll('.nav-item');
+        allNavItems.forEach(item => item.classList.remove('active'));
+
+        // نمایش تب انتخاب‌شده
+        const selectedTab = document.getElementById('tab-' + tabId);
+        if (selectedTab) {
+          selectedTab.classList.add('active');
+        }
+
+        // فعال‌سازی استایل دکمه کلیک‌شده
+        if (el) {
+          el.classList.add('active');
+        }
+      } catch (err) {
+        console.error("خطا در تعویض صفحه:", err);
+      }
     }
 
+    // =========================================================
+    // ۲. تابع تغییر تم روز / شب (Theme Toggle Engine)
+    // =========================================================
     function toggleTheme() {
-      const body = document.body;
-      const themeBtn = document.getElementById('theme-btn');
-      const isDark = body.getAttribute('data-theme') === 'dark';
-      body.setAttribute('data-theme', isDark ? 'light' : 'dark');
-      themeBtn.innerText = isDark ? '🌙' : '☀️';
+      try {
+        const body = document.body;
+        const themeBtn = document.getElementById('theme-btn');
+        const isDark = body.getAttribute('data-theme') === 'dark';
+        
+        if (isDark) {
+          body.setAttribute('data-theme', 'light');
+          if (themeBtn) themeBtn.innerText = '🌙';
+        } else {
+          body.setAttribute('data-theme', 'dark');
+          if (themeBtn) themeBtn.innerText = '☀️';
+        }
+      } catch (err) {
+        console.error("خطا در تغییر تم:", err);
+      }
     }
 
-    // Live Countdown Timer Engine (Days : Hours : Minutes : Seconds)
+    // =========================================================
+    // ۳. تایمر معکوس زنده (روز : ساعت : دقیقه : ثانیه)
+    // =========================================================
     function startCountdown(targetDateStr) {
+      if (!targetDateStr) return;
       const targetDate = new Date(targetDateStr).getTime();
       
       setInterval(() => {
@@ -254,6 +354,9 @@
       }, 1000);
     }
 
+    // =========================================================
+    // ۴. مدیریت پاپ‌آپ و فراخوانی وب‌فوک حذف حساب
+    // =========================================================
     function openDeleteModal() { document.getElementById('delete-modal').style.display = 'flex'; }
     function closeDeleteModal() { document.getElementById('delete-modal').style.display = 'none'; }
 
@@ -272,6 +375,9 @@
       }
     }
 
+    // =========================================================
+    // ۵. دریافت اطلاعات کاربر و احراز هویت اولیه
+    // =========================================================
     async function initApp() {
       const user = tg.initDataUnsafe?.user || { id: 123456789, first_name: "کاربر تست" };
       currentUserTelegramId = user.id;
@@ -286,18 +392,22 @@
         const data = await response.json();
         const userData = Array.isArray(data) ? data[0] : data;
 
-        document.getElementById('user-name').innerText = userData.first_name;
-        document.getElementById('user-level').innerText = `سطح آموزشی: ${userData.cefr_level || 'A1'}`;
+        const nameEl = document.getElementById('user-name');
+        const levelEl = document.getElementById('user-level');
+
+        if (nameEl) nameEl.innerText = userData.first_name || user.first_name;
+        if (levelEl) levelEl.innerText = `سطح آموزشی: ${userData.cefr_level || 'تعیین نشده'}`;
 
         if (userData.trial_ends_at) {
           startCountdown(userData.trial_ends_at);
         }
 
       } catch (err) {
-        console.error("Auth Error:", err);
+        console.error("خطا در ارتباط با n8n:", err);
       }
     }
 
+    // اجرا هنگام تعویض یا باز شدن صفحه
     initApp();
   </script>
 </body>

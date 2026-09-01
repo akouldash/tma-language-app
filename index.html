@@ -3,90 +3,213 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Language Learning TMA</title>
+  <title>Language Learning App</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
-      --bg-color: #0f172a;
-      --card-bg: #1e293b;
-      --text-color: #f8fafc;
-      --accent-color: #38bdf8;
-      --border-color: #334155;
+      --bg-main: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text-main: #f8fafc;
+      --text-sub: #94a3b8;
+      --primary: #8b5cf6;
+      --primary-gradient: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);
+      --accent: #38bdf8;
+      --danger: #ef4444;
+      --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.36);
     }
+
     [data-theme="light"] {
-      --bg-color: #f8fafc;
-      --card-bg: #ffffff;
-      --text-color: #0f172a;
-      --accent-color: #0284c7;
-      --border-color: #e2e8f0;
+      --bg-main: #f1f5f9;
+      --card-bg: rgba(255, 255, 255, 0.85);
+      --card-border: rgba(0, 0, 0, 0.05);
+      --text-main: #0f172a;
+      --text-sub: #64748b;
+      --primary: #7c3aed;
+      --primary-gradient: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+      --accent: #0284c7;
+      --danger: #dc2626;
+      --shadow: 0 8px 24px 0 rgba(149, 157, 165, 0.15);
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-    body { background-color: var(--bg-color); color: var(--text-color); padding-bottom: 70px; user-select: none; }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; transition: all 0.25s ease; }
+    body { background: var(--bg-main); color: var(--text-main); padding-bottom: 90px; user-select: none; }
     .container { padding: 16px; max-width: 480px; margin: 0 auto; }
-    .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+
+    /* Top Bar Header */
+    .top-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; margin-bottom: 12px; }
+    .theme-toggle-btn { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; box-shadow: var(--shadow); }
+
+    /* Modern Glass Card */
+    .card { background: var(--card-bg); backdrop-filter: blur(12px); border: 1px solid var(--card-border); border-radius: 20px; padding: 18px; margin-bottom: 14px; box-shadow: var(--shadow); }
+
+    /* Countdown Box */
+    .timer-box { display: flex; justify-content: space-around; direction: ltr; margin-top: 10px; text-align: center; }
+    .timer-unit { background: rgba(0,0,0,0.15); padding: 8px 12px; border-radius: 12px; min-width: 60px; }
+    .timer-val { font-size: 18px; font-weight: bold; color: var(--accent); }
+    .timer-lbl { font-size: 10px; color: var(--text-sub); }
+
+    /* Tabs Engine */
     .tab-content { display: none; }
-    .tab-content.active { display: block; }
-    .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; padding: 10px 0; }
-    .nav-item { border: none; background: none; color: var(--text-color); opacity: 0.6; font-size: 12px; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
-    .nav-item.active { opacity: 1; color: var(--accent-color); font-weight: bold; }
-    .btn { width: 100%; padding: 12px; background: var(--accent-color); color: #fff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 8px; }
+    .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Floating Curved Bottom Bar */
+    .nav-bar { position: fixed; bottom: 16px; left: 16px; right: 16px; max-width: 448px; margin: 0 auto; background: var(--card-bg); backdrop-filter: blur(16px); border: 1px solid var(--card-border); border-radius: 28px; display: flex; justify-content: space-around; align-items: center; height: 68px; box-shadow: var(--shadow); z-index: 100; }
+    .nav-item { border: none; background: none; color: var(--text-sub); font-size: 11px; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; flex: 1; }
+    .nav-item.active { color: var(--primary); font-weight: bold; }
+    
+    /* Center Learn Button (Floating Action Style) */
+    .nav-item.learn-center { position: relative; top: -14px; }
+    .nav-item.learn-center .icon-wrap { background: var(--primary-gradient); color: #fff; width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4); border: 4px solid var(--bg-main); }
+
+    /* Buttons & Settings Accordion */
+    .btn { width: 100%; padding: 14px; background: var(--primary-gradient); color: #fff; border: none; border-radius: 14px; font-weight: bold; cursor: pointer; margin-top: 8px; }
+    .btn-danger { background: var(--danger); }
+    .setting-group { margin-bottom: 12px; }
+    .setting-title { font-weight: bold; font-size: 14px; margin-bottom: 8px; color: var(--accent); }
+    .input-field { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--card-border); background: rgba(0,0,0,0.1); color: var(--text-main); margin-bottom: 8px; }
+
+    /* Modal Popup */
+    .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 200; align-items: center; justify-content: center; padding: 16px; }
+    .modal-content { background: var(--bg-main); border: 1px solid var(--card-border); border-radius: 24px; padding: 20px; max-width: 360px; text-align: center; }
   </style>
 </head>
 <body data-theme="dark">
+
   <div class="container">
-    <!-- Dashboard Tab -->
+    <!-- Top Header -->
+    <div class="top-header">
+      <div style="font-size: 18px; font-weight: bold;">💎 Language Core</div>
+      <button class="theme-toggle-btn" onclick="toggleTheme()" id="theme-btn">☀️</button>
+    </div>
+
+    <!-- 1. DASHBOARD & PROFILE TAB (Right Tab) -->
     <div id="tab-dashboard" class="tab-content active">
-      <div class="card">
-        <h3>📊 وضعیت یادگیری</h3>
-        <p style="margin-top: 8px; opacity: 0.8;">تا ۱۵ روز دیگر می‌توانید داستان‌های کوتاه بخوانید.</p>
+      <div class="card" style="display: flex; align-items: center; gap: 14px;">
+        <div style="width: 50px; height: 50px; border-radius: 50%; background: var(--primary-gradient); display: flex; align-items: center; justify-content: center; font-size: 22px; color: white;">👤</div>
+        <div>
+          <h3 id="user-name">کاربر در حال دریافت...</h3>
+          <p id="user-level" style="font-size: 12px; color: var(--text-sub);">سطح: تعیین نشده</p>
+        </div>
       </div>
+
+      <!-- Subscription Countdown Card -->
       <div class="card">
-        <p>⏳ **دوره تست رایگان:** ۶ روز باقی مانده</p>
+        <p style="font-size: 13px; color: var(--text-sub);">⏳ زمان باقی‌مانده از تست رایگان (۷ روز):</p>
+        <div class="timer-box">
+          <div class="timer-unit"><div class="timer-val" id="t-sec">00</div><div class="timer-lbl">ثانیه</div></div>
+          <div class="timer-unit"><div class="timer-val" id="t-min">00</div><div class="timer-lbl">دقیقه</div></div>
+          <div class="timer-unit"><div class="timer-val" id="t-hrs">00</div><div class="timer-lbl">ساعت</div></div>
+          <div class="timer-unit"><div class="timer-val" id="t-day">00</div><div class="timer-lbl">روز</div></div>
+        </div>
+      </div>
+
+      <!-- Analytics Preview Card -->
+      <div class="card">
+        <h3>📊 وضعیت پیشرفت یادگیری</h3>
+        <p style="font-size: 13px; color: var(--text-sub); margin-top: 6px;">پیش‌بینی هوش مصنوعی: با ادامه روند فعلی، تا ۱۵ روز آینده داستان‌های کوتاه را متوجه خواهید شد.</p>
+      </div>
+
+      <!-- Danger Zone -->
+      <div class="card" style="border-color: rgba(239, 68, 68, 0.3);">
+        <button class="btn btn-danger" onclick="openDeleteModal()">🗑️ حذف حساب کاربری و تمام داده‌ها</button>
       </div>
     </div>
 
-    <!-- Learn Tab -->
+    <!-- 2. LEARN TAB (Center Main) -->
     <div id="tab-learn" class="tab-content">
-      <div class="card">
-        <h3>🎯 درس امروز</h3>
-        <p style="margin: 8px 0;">شروع مسیر اختصاصی هوش مصنوعی</p>
-        <button class="btn" onclick="alert('اتصال به n8n در فاز بعدی انجام می‌شود')">شروع تمرین</button>
+      <div class="card" style="text-align: center; padding: 30px 16px;">
+        <h2>🎯 مسیر اختصاصی شما</h2>
+        <p style="color: var(--text-sub); margin: 12px 0;">جهت ساخت برنامه درسی مبتنی بر هوش مصنوعی آماده‌اید؟</p>
+        <button class="btn" onclick="alert('اتصال به موتور هوش مصنوعی در گام بعدی انجام خواهد شد.')">شروع مسیر آموزش</button>
       </div>
     </div>
 
-    <!-- Profile Tab -->
-    <div id="tab-profile" class="tab-content">
-      <div class="card">
-        <h3>👤 پروفایل کاربر</h3>
-        <p id="user-info" style="margin-top: 8px;">در حال دریافت اطلاعات تلگرام...</p>
-      </div>
-    </div>
-
-    <!-- Settings Tab -->
+    <!-- 3. SETTINGS TAB (Left Tab) -->
     <div id="tab-settings" class="tab-content">
       <div class="card">
-        <h3>⚙️ تنظیمات</h3>
-        <button class="btn" style="background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-color);" onclick="toggleTheme()">تغییر تم (دارک / لایت)</button>
+        <h3>⚙️ تنظیمات برنامه</h3>
+        
+        <!-- Group 1: Display -->
+        <div class="setting-group" style="margin-top: 14px;">
+          <div class="setting-title">🎨 1. تنظیمات نمایش</div>
+          <select class="input-field"><option>فونت وزیر متن (پیش‌فرض)</option><option>فونت یکان</option></select>
+          <select class="input-field"><option>اندازه متن: متوسط</option><option>اندازه متن: بزرگ</option></select>
+        </div>
+
+        <!-- Group 2: Audio -->
+        <div class="setting-group">
+          <div class="setting-title">🔊 2. تنظیمات صوت</div>
+          <label style="font-size: 12px; display: block; margin-bottom: 4px;">انتخاب شخصیت گوینده (۱۰ مدل):</label>
+          <select class="input-field">
+            <option>1. الکس (مرد - انگلیسی رسمی)</option>
+            <option>2. سارا (زن - انگلیسی گویش آمریکایی)</option>
+            <option>3. معلم هوشمند (طنز)</option>
+          </select>
+        </div>
+
+        <!-- Group 3: Notifications -->
+        <div class="setting-group">
+          <div class="setting-title">🔔 3. یادآوری روزانه</div>
+          <input type="time" class="input-field" value="20:00">
+        </div>
+
+        <!-- Group 4: Privacy -->
+        <div class="setting-group">
+          <div class="setting-title">🛡️ 4. حریم خصوصی</div>
+          <p style="font-size: 11px; color: var(--text-sub);">تمامی داده‌های تمرینی شما به‌صورت رمزنگاری‌شده در سرور ذخیره می‌شود.</p>
+        </div>
+
+        <!-- Group 5: About -->
+        <div class="setting-group">
+          <div class="setting-title">ℹ️ 5. درباره ما و پشتیبانی</div>
+          <p style="font-size: 11px; color: var(--text-sub);">نسخه مینی‌آپ: 2.0.0 (پشتیبانی ۲۴ ساعته)</p>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Navigation -->
+  <!-- Bottom Floating Navbar -->
   <nav class="nav-bar">
-    <button class="nav-item active" onclick="switchTab('dashboard', this)">🏠<span>داشبورد</span></button>
-    <button class="nav-item" onclick="switchTab('learn', this)">📚<span>آموزش</span></button>
-    <button class="nav-item" onclick="switchTab('profile', this)">👤<span>پروفایل</span></button>
-    <button class="nav-item" onclick="switchTab('settings', this)">⚙️<span>تنظیمات</span></button>
+    <button class="nav-item" onclick="switchTab('settings', this)">
+      <span style="font-size: 18px;">⚙️</span>
+      <span>تنظیمات</span>
+    </button>
+    
+    <button class="nav-item learn-center" onclick="switchTab('learn', this)">
+      <div class="icon-wrap">🎓</div>
+      <span>آموزش</span>
+    </button>
+
+    <button class="nav-item active" onclick="switchTab('dashboard', this)">
+      <span style="font-size: 18px;">📊</span>
+      <span>داشبورد</span>
+    </button>
   </nav>
+
+  <!-- Delete Account Modal Popup -->
+  <div class="modal" id="delete-modal">
+    <div class="modal-content">
+      <h3 style="color: var(--danger); margin-bottom: 10px;">⚠️ حذف حساب کاربری</h3>
+      <p style="font-size: 12px; color: var(--text-sub); margin-bottom: 16px;">تمام داده‌ها، پیشرفت لایتنر و تاریخچه فعالیت شما به‌صورت دائمی حذف خواهد شد و غیرقابل بازیابی است. آیا مطمئن هستید؟</p>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn btn-danger" onclick="executeAccountDeletion()">تأیید حذف کامل</button>
+        <button class="btn" style="background: var(--card-bg); border: 1px solid var(--card-border);" onclick="closeDeleteModal()">انصراف</button>
+      </div>
+    </div>
+  </div>
 
   <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // ⚠️ آدرس وب‌هوکی که از n8n کپی کردید را اینجا بگذارید
-    const N8N_WEBHOOK_URL = "https://your-n8n-domain.com/webhook/auth"; 
+    const N8N_AUTH_URL = "https://your-n8n-domain.com/webhook/auth"; 
+    const N8N_DELETE_URL = "https://your-n8n-domain.com/webhook/delete-account";
 
-    // ۱. تابع تعویض تب‌های پایین برنامه
+    let trialEndsAt = null;
+    let currentUserTelegramId = null;
+
     function switchTab(tabId, el) {
       document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -94,51 +217,86 @@
       if (el) el.classList.add('active');
     }
 
-    // ۲. تابع تغییر تم (دارک / لایت)
     function toggleTheme() {
       const body = document.body;
-      const current = body.getAttribute('data-theme');
-      body.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+      const themeBtn = document.getElementById('theme-btn');
+      const isDark = body.getAttribute('data-theme') === 'dark';
+      body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      themeBtn.innerText = isDark ? '🌙' : '☀️';
     }
 
-    // ۳. تابع احراز هویت و دریافت اطلاعات از n8n
-    async function initApp() {
-      const user = tg.initDataUnsafe?.user || { id: 123456789, first_name: "کاربر تست" };
-    
+    // Live Countdown Timer Engine (Days : Hours : Minutes : Seconds)
+    function startCountdown(targetDateStr) {
+      const targetDate = new Date(targetDateStr).getTime();
+      
+      setInterval(() => {
+        const now = new Date().getTime();
+        const diff = targetDate - now;
+
+        if (diff <= 0) {
+          document.getElementById('t-day').innerText = "00";
+          document.getElementById('t-hrs').innerText = "00";
+          document.getElementById('t-min').innerText = "00";
+          document.getElementById('t-sec').innerText = "00";
+          return;
+        }
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+        document.getElementById('t-day').innerText = String(days).padStart(2, '0');
+        document.getElementById('t-hrs').innerText = String(hours).padStart(2, '0');
+        document.getElementById('t-min').innerText = String(minutes).padStart(2, '0');
+        document.getElementById('t-sec').innerText = String(seconds).padStart(2, '0');
+      }, 1000);
+    }
+
+    function openDeleteModal() { document.getElementById('delete-modal').style.display = 'flex'; }
+    function closeDeleteModal() { document.getElementById('delete-modal').style.display = 'none'; }
+
+    async function executeAccountDeletion() {
+      if (!currentUserTelegramId) return;
       try {
-        const response = await fetch(N8N_WEBHOOK_URL, {
+        await fetch(N8N_DELETE_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            telegram_id: user.id,
-            first_name: user.first_name
-          })
+          body: JSON.stringify({ telegram_id: currentUserTelegramId })
         });
-      
-        const data = await response.json();
-        const userData = Array.isArray(data) ? data[0] : data;
-
-        // بروزرسانی بخش پروفایل و داشبورد
-        const userInfoEl = document.getElementById('user-info');
-        if (userInfoEl) {
-          userInfoEl.innerText = `کاربر: ${userData.first_name} (سطح: ${userData.cefr_level || 'تعیین نشده'})`;
-        }
-      
-        if (userData.access_status === 'EXPIRED') {
-          alert('مهلت ۷ روزه تست رایگان شما تمام شده است. لطفاً اشتراک تهیه کنید.');
-        } else {
-          const trialEl = document.querySelector('#tab-dashboard .card:nth-child(2) p');
-          if (trialEl) {
-            trialEl.innerText = `⏳ **دوره تست رایگان:** ${userData.remaining_trial_days} روز باقی مانده`;
-          }
-        }
-
-      } catch (err) {
-        console.error("خطا در احراز هویت:", err);
+        alert('حساب کاربری و تمامی داده‌های شما با موفقیت پاک شد.');
+        tg.close();
+      } catch (e) {
+        alert('خطا در پاک‌سازی حساب.');
       }
     }
 
-    // اجرا هنگام شروع برنامه
+    async function initApp() {
+      const user = tg.initDataUnsafe?.user || { id: 123456789, first_name: "کاربر تست" };
+      currentUserTelegramId = user.id;
+
+      try {
+        const response = await fetch(N8N_AUTH_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ telegram_id: user.id, first_name: user.first_name })
+        });
+        
+        const data = await response.json();
+        const userData = Array.isArray(data) ? data[0] : data;
+
+        document.getElementById('user-name').innerText = userData.first_name;
+        document.getElementById('user-level').innerText = `سطح آموزشی: ${userData.cefr_level || 'A1'}`;
+
+        if (userData.trial_ends_at) {
+          startCountdown(userData.trial_ends_at);
+        }
+
+      } catch (err) {
+        console.error("Auth Error:", err);
+      }
+    }
+
     initApp();
   </script>
 </body>

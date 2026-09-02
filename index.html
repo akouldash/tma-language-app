@@ -786,16 +786,11 @@
       }
     }
 
+
     /* ========================================================= */
     /* تابع اصلی مقداردهی اولیه                                 */
     /* ========================================================= */
     async function initApp() {
-      const user = tg.initDataUnsafe?.user || { 
-        id: 12345654321, 
-        username: "alimohamadi", 
-        first_name: "علی", 
-        last_name: "محمدی" 
-      };
       currentUserTelegramId = user.id;
 
       // پردازش نام کامل و یوزرنیم
@@ -815,9 +810,12 @@
         subtextEl.innerText = subtext;
         if (!subtext) subtextEl.style.display = 'none';
       }
-      
+  
       // محاسبه ۷ روز اولیه (فقط به عنوان Fallback)
       let defaultTrialEnd = new Date().getTime() + (7 * 24 * 60 * 60 * 1000);
+
+      // 🔴 تغییر مهم ۱: تعریف متغیر userData بیرون از بلوک try
+      let userData = null;
 
       try {
         // فراخوانی وب‌فوک احراز هویت و دریافت وضعیت کاربر
@@ -832,9 +830,11 @@
             init_data: tg.initData 
           })
         });
-    
+
         const data = await response.json();
-        const userData = Array.isArray(data) ? data[0] : data;
+    
+        // 🔴 تغییر مهم ۲: مقداردهی به متغیر بدون تعریف مجدد با const
+        userData = Array.isArray(data) ? data[0] : data;
 
         console.log("اطلاعات دريافتی کاربر از بک‌اند:", userData);
 
@@ -880,13 +880,13 @@
 
       if (userData) {
         // اگر userData خودش آرایه است (گاهی n8n لیست برمی‌گرداند)
-        const user = Array.isArray(userData) ? userData[0] : userData;
+        const userObj = Array.isArray(userData) ? userData[0] : userData;
 
-        if (user && user.trial_ends_at) {
-          targetTimestamp = parseServerDate(user.trial_ends_at);
-          console.log("تاریخ انقضای خوانده شده از دیتابیس:", user.trial_ends_at, "-> timestamp:", targetTimestamp);
-        } else if (user && user.created_at) {
-          const createdMs = parseServerDate(user.created_at);
+        if (userObj && userObj.trial_ends_at) {
+          targetTimestamp = parseServerDate(userObj.trial_ends_at);
+          console.log("تاریخ انقضای خوانده شده از دیتابیس:", userObj.trial_ends_at, "-> timestamp:", targetTimestamp);
+        } else if (userObj && userObj.created_at) {
+          const createdMs = parseServerDate(userObj.created_at);
           if (createdMs) {
             targetTimestamp = createdMs + (7 * 24 * 60 * 60 * 1000);
           }

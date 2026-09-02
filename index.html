@@ -794,23 +794,14 @@
       };
       currentUserTelegramId = user.id;
 
-      // پردازش نام کامل
+      // پردازش نام کامل و یوزرنیم
       const firstName = user.first_name ? user.first_name.trim() : "";
       const lastName = user.last_name ? user.last_name.trim() : "";
       const fullName = (firstName + " " + lastName).trim() || "کاربر ناشناس";
-
-      // پردازش یوزرنیم (حذف @) و آی‌دی
       const cleanUsername = user.username ? user.username.replace(/^@/, '').trim() : "";
       const userId = user.id ? String(user.id) : "";
 
-      let subtext = "";
-      if (cleanUsername && userId) {
-        subtext = `${cleanUsername} - ${userId}`;
-      } else if (cleanUsername) {
-        subtext = cleanUsername;
-      } else if (userId) {
-        subtext = userId;
-      }
+      let subtext = cleanUsername && userId ? `${cleanUsername} - ${userId}` : (cleanUsername || userId);
 
       const fullNameEl = document.getElementById('user-fullname');
       const subtextEl = document.getElementById('user-subtext');
@@ -824,6 +815,7 @@
       let defaultTrialEnd = new Date().getTime() + (7 * 24 * 60 * 60 * 1000);
 
       try {
+        // فراخوانی وب‌فوک احراز هویت و دریافت وضعیت کاربر
         const response = await fetch(N8N_AUTH_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -832,18 +824,31 @@
             username: user.username, 
             first_name: user.first_name, 
             last_name: user.last_name,
-            init_data: tg.initData // ارسال initData تلگرام جهت امنیت HMAC
+            init_data: tg.initData 
           })
         });
-        
+    
         const data = await response.json();
         const userData = Array.isArray(data) ? data[0] : data;
 
-        if (userData && userData.trial_ends_at) {
-          defaultTrialEnd = new Date(userData.trial_ends_at).getTime();
+        if (userData) {
+          if (userData.trial_ends_at) {
+            defaultTrialEnd = new Date(userData.trial_ends_at).getTime();
+          }
+
+          // 🎯 بررسی اینکه آیا کاربر قبلاً تعیین سطح شده است یا خیر
+          if (userData.determined_level) {
+            // ۱. پنهان کردن کارت شروع آزمون و نمایش مستقیم کارت نتیجه/مسیر
+            document.getElementById('quiz-start-card').style.display = 'none';
+        
+            displayQuizResults({
+              determined_level: userData.determined_level,
+              summary: userData.ai_analysis_summary || "مسیر اختصاصی آموزشی شما فعال است."
+            });
+          }
         }
       } catch (err) {
-        console.warn("استفاده از تایمر پیش‌فرض ۷ روزه آزمایشی.");
+        console.warn("خطا در دریافت وضعیت کاربر از بک‌اند، استفاده از حالت اولیه.", err);
       }
 
       startCountdown(defaultTrialEnd);

@@ -74,11 +74,11 @@
       right: 0; 
       max-width: 280px; 
       margin: 0 auto; 
-      background: transparent; /* حذف کادر و پس‌زمینه منو */
+      background: transparent; 
       border: none;
       display: flex; 
       justify-content: space-between; 
-      align-items: flex-end; /* تراز دکمه‌ها از پایین */
+      align-items: flex-end; 
       height: 70px; 
       z-index: 100; 
       pointer-events: none; 
@@ -98,7 +98,6 @@
       backdrop-filter: blur(12px);
     }
 
-    /* دکمه‌های کناری (تنظیمات و پروفایل) - کوچکتر و پایین‌تر */
     .nav-item.side-btn {
       width: 44px;
       height: 44px;
@@ -112,7 +111,6 @@
       transform: translateY(-2px);
     }
 
-    /* دکمه مرکزی (آموزش) - بزرگتر و بالاتر از تراز */
     .nav-item.learn-center { 
       width: 68px; 
       height: 68px; 
@@ -181,7 +179,6 @@
       <div class="card" style="display: flex; align-items: center; gap: 14px;">
         <div style="width: 52px; height: 52px; border-radius: 50%; background: var(--primary-gradient); display: flex; align-items: center; justify-content: center; font-size: 24px; color: white;">👤</div>
         <div>
-          <!-- نمایش یوزرنیم تلگرامی کاربر -->
           <h3 id="user-name">@username</h3>
           <p id="user-level" style="font-size: 12px; color: var(--text-sub);">سطح آموزشی: تعیین نشده</p>
         </div>
@@ -234,31 +231,26 @@
         <h3 style="margin-bottom: 16px;">⚙️ تنظیمات برنامه</h3>
         
         <div class="settings-list">
-          <!-- آیتم ۱: نمایش -->
           <div class="setting-item-btn" onclick="openModal('modal-setting-display')">
             <div class="setting-item-left"><span>🎨</span> <span>تنظیمات نمایش</span></div>
             <span class="chevron">❮</span>
           </div>
 
-          <!-- آیتم ۲: صوت -->
           <div class="setting-item-btn" onclick="openModal('modal-setting-audio')">
             <div class="setting-item-left"><span>🔊</span> <span>تنظیمات صوت</span></div>
             <span class="chevron">❮</span>
           </div>
 
-          <!-- آیتم ۳: یادآوری -->
           <div class="setting-item-btn" onclick="openModal('modal-setting-reminder')">
             <div class="setting-item-left"><span>🔔</span> <span>یادآوری روزانه</span></div>
             <span class="chevron">❮</span>
           </div>
 
-          <!-- آیتم ۴: حریم خصوصی -->
           <div class="setting-item-btn" onclick="openModal('modal-setting-privacy')">
             <div class="setting-item-left"><span>🛡️</span> <span>حریم خصوصی</span></div>
             <span class="chevron">❮</span>
           </div>
 
-          <!-- آیتم ۵: درباره ما و پشتیبانی -->
           <div class="setting-item-btn" onclick="openModal('modal-setting-about')">
             <div class="setting-item-left"><span>ℹ️</span> <span>درباره ما و تماس با پشتیبانی</span></div>
             <span class="chevron">❮</span>
@@ -269,24 +261,18 @@
   </div>
 
   <!-- ========================================================= -->
-  <!-- منوی شناور پایینی (بدون کادر، دکمه وسط بزرگتر و بالاتر)     -->
+  <!-- منوی شناور پایینی                                         -->
   <!-- ========================================================= -->
   <nav class="nav-bar">
-    <!-- دکمه تنظیمات (سمت چپ - کوچک) -->
     <button class="nav-item side-btn" onclick="switchTab('settings', this)" title="تنظیمات">⚙️</button>
-
-    <!-- دکمه مرکزی آموزش (برجسته و بزرگ) -->
     <button class="nav-item learn-center" onclick="switchTab('learn', this)" title="آموزش">🎓</button>
-
-    <!-- دکمه داشبورد/پروفایل با آیکون کاربر (سمت راست - کوچک) -->
     <button class="nav-item side-btn active" onclick="switchTab('dashboard', this)" title="داشبورد و پروفایل">👤</button>
   </nav>
 
   <!-- ========================================================= -->
-  <!-- همه پاپ‌آپ‌ها (MODALS)                                       -->
+  <!-- پاپ‌آپ‌ها (MODALS)                                       -->
   <!-- ========================================================= -->
 
-  <!-- ۱. پاپ‌آپ راهنمای اشتراک -->
   <div class="modal" id="modal-sub-info">
     <div class="modal-content">
       <div class="modal-header">
@@ -300,7 +286,6 @@
     </div>
   </div>
 
-  <!-- ۲. پاپ‌آپ حذف حساب کاربری -->
   <div class="modal" id="modal-delete-acc">
     <div class="modal-content" style="text-align: center;">
       <h3 style="color: var(--danger); margin-bottom: 10px;">⚠️ حذف حساب کاربری</h3>
@@ -314,7 +299,6 @@
     </div>
   </div>
 
-  <!-- ۳. پاپ‌آپ تنظیمات نمایش -->
   <div class="modal" id="modal-setting-display">
     <div class="modal-content">
       <div class="modal-header">
@@ -329,7 +313,6 @@
     </div>
   </div>
 
-  <!-- ۴. پاپ‌آپ تنظیمات صوت -->
   <div class="modal" id="modal-setting-audio">
     <div class="modal-content">
       <div class="modal-header">
@@ -348,7 +331,6 @@
     </div>
   </div>
 
-  <!-- ۵. پاپ‌آپ تنظیمات یادآوری -->
   <div class="modal" id="modal-setting-reminder">
     <div class="modal-content">
       <div class="modal-header">
@@ -361,7 +343,6 @@
     </div>
   </div>
 
-  <!-- ۶. پاپ‌آپ حریم خصوصی (متن کامل و حرفه‌ای) -->
   <div class="modal" id="modal-setting-privacy">
     <div class="modal-content">
       <div class="modal-header">
@@ -378,7 +359,6 @@
     </div>
   </div>
 
-  <!-- ۷. پاپ‌آپ درباره ما + منطق هوش مصنوعی + فرم تماس با ما -->
   <div class="modal" id="modal-setting-about">
     <div class="modal-content">
       <div class="modal-header">
@@ -386,7 +366,6 @@
         <button class="modal-close" onclick="closeModal('modal-setting-about')">✕</button>
       </div>
       
-      <!-- توضیحات درباره منطق برنامه -->
       <div style="font-size: 12px; color: var(--text-sub); line-height: 1.6; margin-bottom: 16px;">
         <p style="margin-bottom: 8px;"><b>🤖 منطق آموزشی هوشمند (AI Core):</b></p>
         <p>این سیستم بر خلاف متدهای سنتی، با استفاده از مدل هوش مصنوعی تعاملی، وضعیت دقیق علمی و سرعت یادگیری شما را تحلیل کرده و یک <b>مسیر ۱۰۰٪ اختصاصی</b> طراحی می‌کند.</p>
@@ -395,7 +374,6 @@
 
       <hr style="border: 0; border-top: 1px solid var(--card-border); margin: 14px 0;">
 
-      <!-- بخش تماس با ما -->
       <h4 style="margin-bottom: 10px; font-size: 13px;">📞 تماس با پشتیبانی</h4>
       
       <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px;">
@@ -405,7 +383,6 @@
         <div style="font-size: 11px; color: var(--text-sub); text-align: center;">✉️ ایمیل پشتیبانی: support@languageapp.com</div>
       </div>
 
-      <!-- فرم ثبت پیام (UI) -->
       <div style="background: rgba(0,0,0,0.1); padding: 12px; border-radius: 14px; border: 1px solid var(--card-border);">
         <p style="font-size: 11px; color: var(--text-sub); margin-bottom: 8px;">ارسال پیام مستقیم به پشتیبانی:</p>
         <input type="text" id="ticket-subject" class="input-field" placeholder="موضوع پیام...">
@@ -416,22 +393,18 @@
   </div>
 
   <!-- ========================================================= -->
-  <!-- کدهای JavaScript با خطوط راهنما جهت دیباگ سریع             -->
+  <!-- کدهای JavaScript با وب‌فوک‌های واقعی n8n                    -->
   <!-- ========================================================= -->
   <script>
-    // اتصال اولیه به وب‌اپ تلگرام
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // آدرس‌های وب‌فوک n8n (در صورت فعال‌سازی بک‌اند متصل می‌شود)
+    // آدرس‌های واقعی n8n جایگزین شدند
     const N8N_AUTH_URL = "https://sahand212.app.n8n.cloud/webhook/auth"; 
     const N8N_DELETE_URL = "https://sahand212.app.n8n.cloud/webhook/delete-account";
 
     let currentUserTelegramId = null;
 
-    // =========================================================
-    // ۱. مدیریت پاپ‌آپ‌ها (Modals Engine)
-    // =========================================================
     function openModal(modalId) {
       try {
         const m = document.getElementById(modalId);
@@ -450,9 +423,6 @@
       }
     }
 
-    // =========================================================
-    // ۲. سیستم تعویض تب‌ها (Navigation Engine)
-    // =========================================================
     function switchTab(tabId, el) {
       try {
         document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
@@ -466,9 +436,6 @@
       }
     }
 
-    // =========================================================
-    // ۳. تغییر تم (روز / شب)
-    // =========================================================
     function toggleTheme() {
       try {
         const body = document.body;
@@ -482,9 +449,6 @@
       }
     }
 
-    // =========================================================
-    // ۴. موتور تایمر معکوس اشتراک (با فال‌بک ۷ روزه برای فرانت‌اند)
-    // =========================================================
     function startCountdown(targetDateMs) {
       setInterval(() => {
         const now = new Date().getTime();
@@ -510,29 +474,22 @@
       }, 1000);
     }
 
-    // =========================================================
-    // ۵. اجرای عملیات حذف حساب کاربری (تست محلی + اتصال n8n)
-    // =========================================================
     async function executeAccountDeletion() {
       closeModal('modal-delete-acc');
       try {
-        // تلاش برای فراخوانی API حذف در n8n
         await fetch(N8N_DELETE_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ telegram_id: currentUserTelegramId })
         });
       } catch (e) {
-        console.warn("حالت آفلاین/تست: ارتباط با n8n برقرار نشد، اما فرانت‌اند پاک‌سازی گردید.");
+        console.warn("ارتباط مستقیم با n8n برقرار نشد، عملیات محلی اجرا شد.");
       }
       
       alert('حساب کاربری و تمامی داده‌های شما با موفقیت پاک شد.');
       if (tg && tg.close) tg.close();
     }
 
-    // =========================================================
-    // ۶. فرم تماس با پشتیبانی (ثبت تیکت UI)
-    // =========================================================
     function submitContactForm() {
       const subj = document.getElementById('ticket-subject').value;
       const body = document.getElementById('ticket-body').value;
@@ -542,27 +499,21 @@
         return;
       }
 
-      // در فاز بعدی این اطلاعات به API ثبت تیکت ارسال خواهد شد
       alert('پیام شما با موفقیت ثبت شد. به‌زودی از طریق تلگرام با شما تماس خواهیم گرفت.');
       document.getElementById('ticket-subject').value = '';
       document.getElementById('ticket-body').value = '';
       closeModal('modal-setting-about');
     }
 
-    // =========================================================
-    // ۷. راه اندازی اولیه برنامه و دریافت یوزرنیم تلگرام
-    // =========================================================
     async function initApp() {
       const user = tg.initDataUnsafe?.user || { id: 123456789, username: "demo_user", first_name: "کاربر تست" };
       currentUserTelegramId = user.id;
 
-      // نمایش یوزرنیم تلگرام کاربر
       const nameEl = document.getElementById('user-name');
       if (nameEl) {
         nameEl.innerText = user.username ? `@${user.username}` : (user.first_name || "کاربر ناشناس");
       }
 
-      // تایمر فال‌بک ۷ روزه در صورت عدم دریافت از بک‌اند
       let defaultTrialEnd = new Date().getTime() + (7 * 24 * 60 * 60 * 1000);
 
       try {
@@ -585,7 +536,6 @@
       startCountdown(defaultTrialEnd);
     }
 
-    // اجرای برنامه
     initApp();
   </script>
 </body>

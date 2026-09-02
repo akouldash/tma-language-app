@@ -856,15 +856,15 @@
       }
 
       // -------------------------------------------------------------
-      // محاسبه زمان واقعی باقی‌مانده
+      // محاسبه زمان واقعی باقی‌مانده از روی داده‌های n8n / Supabase
       // -------------------------------------------------------------
       let targetTimestamp = defaultTrialEnd;
 
-      // ۱. اگر بک‌اند تاریخ اتمام اشتراک (trial_end) را برگردانده باشد:
-      if (userData && userData.trial_end) {
-        targetTimestamp = new Date(userData.trial_end).getTime();
+      // خواندن مستقیم ستون trial_ends_at که از n8n برمی‌گردد
+      if (userData && userData.trial_ends_at) {
+        targetTimestamp = new Date(userData.trial_ends_at).getTime();
       } 
-      // ۲. اگر بک‌اند تاریخ ساخت حساب (created_at) را برگردانده باشد:
+      // یا اگر به هر دلیلی created_at محاسبه شود:
       else if (userData && userData.created_at) {
         const createdAtMs = new Date(userData.created_at).getTime();
         targetTimestamp = createdAtMs + (7 * 24 * 60 * 60 * 1000); // افزودن ۷ روز به زمان ثبت‌نام

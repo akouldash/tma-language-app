@@ -811,7 +811,8 @@
         subtextEl.innerText = subtext;
         if (!subtext) subtextEl.style.display = 'none';
       }
-
+      
+      // محاسبه ۷ روز اولیه (فقط به عنوان Fallback)
       let defaultTrialEnd = new Date().getTime() + (7 * 24 * 60 * 60 * 1000);
 
       try {
@@ -854,9 +855,24 @@
         console.warn("خطا در دریافت وضعیت کاربر از بک‌اند:", err);
       }
 
-      startCountdown(defaultTrialEnd);
-    }
+      // -------------------------------------------------------------
+      // محاسبه زمان واقعی باقی‌مانده
+      // -------------------------------------------------------------
+      let targetTimestamp = defaultTrialEnd;
 
+      // ۱. اگر بک‌اند تاریخ اتمام اشتراک (trial_end) را برگردانده باشد:
+      if (userData && userData.trial_end) {
+        targetTimestamp = new Date(userData.trial_end).getTime();
+      } 
+      // ۲. اگر بک‌اند تاریخ ساخت حساب (created_at) را برگردانده باشد:
+      else if (userData && userData.created_at) {
+        const createdAtMs = new Date(userData.created_at).getTime();
+        targetTimestamp = createdAtMs + (7 * 24 * 60 * 60 * 1000); // افزودن ۷ روز به زمان ثبت‌نام
+      }
+
+      // شروع معکوس‌شمار با زمان ثابت و واقعی
+      startCountdown(targetTimestamp);
+    }
 
     initApp();
   </script>

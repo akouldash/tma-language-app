@@ -788,20 +788,26 @@
 
 
     /* ========================================================= */
-    /* تابع اصلی مقداردهی اولیه                                 */
+    /* تابع اصلی مقداردهی اولیه (کامل، ایمن و ضد خطا)             */
     /* ========================================================= */
     async function initApp() {
-      currentUserTelegramId = user.id;
+      // ۱. دریافت ایمن اطلاعات کاربر از تلگرام (جلوگیری از Crash شدن کد)
+      const tgUser = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) 
+                 ? window.Telegram.WebApp.initDataUnsafe.user 
+                 : (typeof user !== 'undefined' ? user : {});
+
+      currentUserTelegramId = tgUser.id || "";
 
       // پردازش نام کامل و یوزرنیم
-      const firstName = user.first_name ? user.first_name.trim() : "";
-      const lastName = user.last_name ? user.last_name.trim() : "";
+      const firstName = tgUser.first_name ? String(tgUser.first_name).trim() : "";
+      const lastName = tgUser.last_name ? String(tgUser.last_name).trim() : "";
       const fullName = (firstName + " " + lastName).trim() || "کاربر ناشناس";
-      const cleanUsername = user.username ? user.username.replace(/^@/, '').trim() : "";
-      const userId = user.id ? String(user.id) : "";
+      const cleanUsername = tgUser.username ? String(tgUser.username).replace(/^@/, '').trim() : "";
+      const userId = tgUser.id ? String(tgUser.id) : "";
 
       let subtext = cleanUsername && userId ? `${cleanUsername} - ${userId}` : (cleanUsername || userId);
 
+      // جایگذاری نام کاربر در صفحه
       const fullNameEl = document.getElementById('user-fullname');
       const subtextEl = document.getElementById('user-subtext');
 
@@ -811,35 +817,37 @@
         if (!subtext) subtextEl.style.display = 'none';
       }
   
-      // محاسبه ۷ روز اولیه (فقط به عنوان Fallback)
+      // محاسبه ۷ روز اولیه (به عنوان پشتیبان)
       let defaultTrialEnd = new Date().getTime() + (7 * 24 * 60 * 60 * 1000);
 
-      // 🔴 تغییر مهم ۱: تعریف متغیر userData بیرون از بلوک try
+      // متغیر داده‌های دریافت شده از بک‌اند
       let userData = null;
 
       try {
-        // فراخوانی وب‌فوک احراز هویت و دریافت وضعیت کاربر
+        const initDataStr = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp.initData : "";
+
+        // فراخوانی وب‌فوک احراز هویت n8n
         const response = await fetch(N8N_AUTH_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 
-            telegram_id: user.id, 
-            username: user.username, 
-            first_name: user.first_name, 
-            last_name: user.last_name,
-            init_data: tg.initData 
+            telegram_id: tgUser.id, 
+            username: tgUser.username, 
+            first_name: tgUser.first_name, 
+            last_name: tgUser.last_name,
+            init_data: initDataStr 
           })
         });
 
         const data = await response.json();
-    
-        // 🔴 تغییر مهم ۲: مقداردهی به متغیر بدون تعریف مجدد با const
         userData = Array.isArray(data) ? data[0] : data;
 
         console.log("اطلاعات دريافتی کاربر از بک‌اند:", userData);
 
-        // 🎯 بررسی اینکه آیا کاربر قبلاً تعیین سطح شده است یا خیر
-        if (userData && userData.determined_level) {
+        // ۲. بررسی سطح کاربر (پشتیبانی همزمان از cefr_level و determined_level)
+        const userLevel = userData ? (userData.cefr_level || userData.determined_level || userData.level) : null;
+
+        if (userLevel) {
           // مخفی کردن تمام کارت‌های مربوط به مراحل آزمون
           const startCard = document.getElementById('quiz-start-card');
           const stepCard = document.getElementById('quiz-step-card');
@@ -850,41 +858,38 @@
           if (loadingCard) loadingCard.style.display = 'none';
 
           // نمایش کارنامه و مسیر درسی
-          displayQuizResults({
-            determined_level: userData.determined_level,
-            summary: userData.ai_analysis_summary || "مسیر اختصاصی آموزشی شما فعال است."
-          });
+          if (typeof displayQuizResults === 'function') {
+            displayQuizResults({
+              determined_level: userLevel,
+              summary: userData.ai_analysis_summary || "مسیر اختصاصی آموزشی شما فعال است."
+            });
+          }
         }
       } catch (err) {
         console.warn("خطا در دریافت وضعیت کاربر از بک‌اند:", err);
       }
 
       // -------------------------------------------------------------
-      // تابع کمکی برای تبدیل ایمن تاریخ دیتابیس به میلی‌ثانیه
+      // تابع کمکی برای تبدیل تاریخ
       // -------------------------------------------------------------
       function parseServerDate(dateString) {
         if (!dateString) return null;
-        // تبدیل فاصله به T برای استانداردسازی ISO 8601
         const formattedStr = String(dateString).trim().replace(' ', 'T');
         const timeMs = new Date(formattedStr).getTime();
         return isNaN(timeMs) ? null : timeMs;
       }
 
       // -------------------------------------------------------------
-      // محاسبه زمان واقعی با اعتبارسنجی
+      // محاسبه زمان واقعی تایمر
       // -------------------------------------------------------------
       let targetTimestamp = null;
 
-      // دیباگ: مشاهده دیتای دریافتی در کنسول مرورگر
-      console.log("دیتا دریافتی از بک‌اند:", userData);
-
       if (userData) {
-        // اگر userData خودش آرایه است (گاهی n8n لیست برمی‌گرداند)
         const userObj = Array.isArray(userData) ? userData[0] : userData;
 
         if (userObj && userObj.trial_ends_at) {
           targetTimestamp = parseServerDate(userObj.trial_ends_at);
-          console.log("تاریخ انقضای خوانده شده از دیتابیس:", userObj.trial_ends_at, "-> timestamp:", targetTimestamp);
+          console.log("تاریخ انقضا از دیتابیس:", userObj.trial_ends_at, "-> timestamp:", targetTimestamp);
         } else if (userObj && userObj.created_at) {
           const createdMs = parseServerDate(userObj.created_at);
           if (createdMs) {
@@ -893,15 +898,20 @@
         }
       }
 
-      // اگر به هر دلیلی تاریخ معتبری از دیتابیس گرفته نشد، از defaultTrialEnd استفاده می‌شود
       if (!targetTimestamp) {
-        console.warn("تاریخ دیتابیس نامعتبر بود؛ استفاده از defaultTrialEnd به عنوان پشتیبان.");
+        console.warn("استفاده از defaultTrialEnd به عنوان پشتیبان.");
         targetTimestamp = defaultTrialEnd;
       }
 
-      // اجرای معکوس‌شمار
-      startCountdown(targetTimestamp);
+      // ۳. اجرای ایمن تایمر
+      if (typeof startCountdown === 'function') {
+        startCountdown(targetTimestamp);
+      } else {
+        console.error("تابع startCountdown یافت نشد!");
+      }
     }
+
+
 
     initApp();
   </script>

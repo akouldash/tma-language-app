@@ -1,8 +1,12 @@
-/* ========================================================= */
-/* تنظیمات ثابت و آدرس‌های وب‌فوک پروژه‌                      */
-/* ========================================================= */
+/* =========================================================
+ * تنظیمات ثابت پروژه‌ و آدرس‌های API پروکسی‌شده
+ * [SECURITY]: استفاده از مسیرهای نسبی جهت استفاده از ری‌رایت Vercel
+ * ========================================================= */
 
-const N8N_AUTH_URL = "https://your-n8n-domain.com/webhook/auth-init"; // آدرس وب‌فوک خود را بگذارید
-const N8N_LESSON_URL = "https://your-n8n-domain.com/webhook/get-lesson"; // برای فاز ۴
+// آدرس‌های وب‌فوک بر اساس vercel.json تنظیم شده‌اند تا نیاز به VPN نباشد
+const N8N_AUTH_URL = "/api/n8n/auth"; 
+const N8N_DELETE_URL = "/api/n8n/delete-account";
+const N8N_PLACEMENT_URL = "/api/n8n/placement-test";
 
+// شناسه کاربر جاری تلگرام
 let currentUserTelegramId = null;

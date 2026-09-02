@@ -50,6 +50,12 @@
     /* کارت‌های شیشه‌ای (Glassmorphism) */
     .card { background: var(--card-bg); backdrop-filter: blur(12px); border: 1px solid var(--card-border); border-radius: 20px; padding: 18px; margin-bottom: 14px; box-shadow: var(--shadow); }
 
+    /* استایل اختصاصی نمایش پروفایل کاربر */
+    .user-profile-info { display: flex; flex-direction: column; justify-content: center; }
+    .user-fullname { font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 2px; }
+    .user-subtext { font-size: 11px; color: var(--text-sub); opacity: 0.85; margin-bottom: 4px; direction: ltr; text-align: right; }
+    .user-level-badge { font-size: 11px; color: var(--accent); }
+
     /* باکس معکوس‌شمار زمان اشتراک */
     .timer-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
     .info-btn { cursor: pointer; font-size: 16px; opacity: 0.8; }
@@ -65,7 +71,7 @@
     @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
     /* ========================================================= */
-    /* ۳. منوی شناور پایینی (اصلاح اندازه و تراز دکمه‌ها)          */
+    /* ۳. منوی شناور پایینی                                      */
     /* ========================================================= */
     .nav-bar { 
       position: fixed; 
@@ -98,18 +104,8 @@
       backdrop-filter: blur(12px);
     }
 
-    .nav-item.side-btn {
-      width: 44px;
-      height: 44px;
-      font-size: 20px;
-      margin-bottom: 4px;
-    }
-
-    .nav-item.side-btn.active { 
-      color: var(--primary); 
-      border-color: var(--primary);
-      transform: translateY(-2px);
-    }
+    .nav-item.side-btn { width: 44px; height: 44px; font-size: 20px; margin-bottom: 4px; }
+    .nav-item.side-btn.active { color: var(--primary); border-color: var(--primary); transform: translateY(-2px); }
 
     .nav-item.learn-center { 
       width: 68px; 
@@ -122,12 +118,10 @@
       transform: translateY(-10px);
     }
     
-    .nav-item.learn-center.active {
-      transform: translateY(-14px) scale(1.06);
-    }
+    .nav-item.learn-center.active { transform: translateY(-14px) scale(1.06); }
 
     /* ========================================================= */
-    /* ۴. لیست آیتم‌های تنظیمات (سبک تلگرام)                     */
+    /* ۴. لیست آیتم‌های تنظیمات                                 */
     /* ========================================================= */
     .settings-list { display: flex; flex-direction: column; gap: 10px; }
     .setting-item-btn {
@@ -176,11 +170,14 @@
     <!-- صفحه ۱: داشبورد و پروفایل کاربر                          -->
     <!-- ========================================================= -->
     <div id="tab-dashboard" class="tab-content active">
+      
+      <!-- کارت مشخصات کاربر (آپدیت‌شده) -->
       <div class="card" style="display: flex; align-items: center; gap: 14px;">
-        <div style="width: 52px; height: 52px; border-radius: 50%; background: var(--primary-gradient); display: flex; align-items: center; justify-content: center; font-size: 24px; color: white;">👤</div>
-        <div>
-          <h3 id="user-name">@username</h3>
-          <p id="user-level" style="font-size: 12px; color: var(--text-sub);">سطح آموزشی: تعیین نشده</p>
+        <div style="width: 52px; height: 52px; border-radius: 50%; background: var(--primary-gradient); display: flex; align-items: center; justify-content: center; font-size: 24px; color: white; flex-shrink: 0;">👤</div>
+        <div class="user-profile-info">
+          <div class="user-fullname" id="user-fullname">...</div>
+          <div class="user-subtext" id="user-subtext">...</div>
+          <div class="user-level-badge" id="user-level">سطح آموزشی: تعیین نشده</div>
         </div>
       </div>
 
@@ -224,7 +221,7 @@
     </div>
 
     <!-- ========================================================= -->
-    <!-- صفحه ۳: تنظیمات (لیست دکمه‌های پاپ‌آپ‌دار)                   -->
+    <!-- صفحه ۳: تنظیمات                                          -->
     <!-- ========================================================= -->
     <div id="tab-settings" class="tab-content">
       <div class="card">
@@ -393,13 +390,12 @@
   </div>
 
   <!-- ========================================================= -->
-  <!-- کدهای JavaScript با وب‌فوک‌های واقعی n8n                    -->
+  <!-- کدهای JavaScript                                           -->
   <!-- ========================================================= -->
   <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // آدرس‌های واقعی n8n جایگزین شدند
     const N8N_AUTH_URL = "https://sahand212.app.n8n.cloud/webhook/auth"; 
     const N8N_DELETE_URL = "https://sahand212.app.n8n.cloud/webhook/delete-account";
 
@@ -505,22 +501,58 @@
       closeModal('modal-setting-about');
     }
 
+    /* ========================================================= */
+    /* ۶. تابع اصلی مقداردهی اولیه‌ و پردازش مشخصات کاربر          */
+    /* ========================================================= */
     async function initApp() {
-      const user = tg.initDataUnsafe?.user || { id: 123456789, username: "demo_user", first_name: "کاربر تست" };
+      // دریافت اطلاعات کاربر از Telegram WebApp یا داده‌های تست
+      const user = tg.initDataUnsafe?.user || { 
+        id: 12345654321, 
+        username: "alimohamadi", 
+        first_name: "علی", 
+        last_name: "محمدی" 
+      };
       currentUserTelegramId = user.id;
 
-      const nameEl = document.getElementById('user-name');
-      if (nameEl) {
-        nameEl.innerText = user.username ? `@${user.username}` : (user.first_name || "کاربر ناشناس");
+      // پردازش نام کوچک و نام خانوادگی
+      const firstName = user.first_name ? user.first_name.trim() : "";
+      const lastName = user.last_name ? user.last_name.trim() : "";
+      const fullName = (firstName + " " + lastName).trim() || "کاربر ناشناس";
+
+      // پردازش یوزرنیم (حذف علامت @) و آی‌دی عددی
+      const cleanUsername = user.username ? user.username.replace(/^@/, '').trim() : "";
+      const userId = user.id ? String(user.id) : "";
+
+      // ساخت متن زیرین (یوزرنیم - آی‌دی عددی)
+      let subtext = "";
+      if (cleanUsername && userId) {
+        subtext = `${cleanUsername} - ${userId}`;
+      } else if (cleanUsername) {
+        subtext = cleanUsername;
+      } else if (userId) {
+        subtext = userId;
       }
 
+      // درج داده‌ها در المان‌های DOM
+      const fullNameEl = document.getElementById('user-fullname');
+      const subtextEl = document.getElementById('user-subtext');
+
+      if (fullNameEl) fullNameEl.innerText = fullName;
+      if (subtextEl) {
+        subtextEl.innerText = subtext;
+        // اگر متن زیرین خالی بود، جایگاه خالی جهت حفظ استایل در نظر گرفته می‌شود
+        if (!subtext) subtextEl.style.display = 'none';
+      }
+
+      // تنظیم زمان پیش‌فرض ۷ روز آزمایشی
       let defaultTrialEnd = new Date().getTime() + (7 * 24 * 60 * 60 * 1000);
 
+      // احراز هویت در دیتابیس از طریق وب‌فوک n8n
       try {
         const response = await fetch(N8N_AUTH_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ telegram_id: user.id, username: user.username, first_name: user.first_name })
+          body: JSON.stringify({ telegram_id: user.id, username: user.username, first_name: user.first_name, last_name: user.last_name })
         });
         
         const data = await response.json();
@@ -536,6 +568,7 @@
       startCountdown(defaultTrialEnd);
     }
 
+    // اجرای برنامه
     initApp();
   </script>
 </body>

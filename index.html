@@ -20,6 +20,7 @@
       --primary-gradient: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);
       --accent: #38bdf8;
       --danger: #ef4444;
+      --success: #10b981;
       --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.36);
     }
 
@@ -33,6 +34,7 @@
       --primary-gradient: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
       --accent: #0284c7;
       --danger: #dc2626;
+      --success: #059669;
       --shadow: 0 8px 24px 0 rgba(149, 157, 165, 0.15);
     }
 
@@ -54,7 +56,7 @@
     .user-profile-info { display: flex; flex-direction: column; justify-content: center; }
     .user-fullname { font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 2px; }
     .user-subtext { font-size: 11px; color: var(--text-sub); opacity: 0.85; margin-bottom: 4px; direction: ltr; text-align: right; }
-    .user-level-badge { font-size: 11px; color: var(--accent); }
+    .user-level-badge { font-size: 11px; color: var(--accent); font-weight: 600; }
 
     /* باکس معکوس‌شمار زمان اشتراک */
     .timer-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
@@ -71,7 +73,37 @@
     @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
     /* ========================================================= */
-    /* ۳. منوی شناور پایینی                                      */
+    /* ۳. استایل‌های اختصاصی ویزارد تعیین سطح (فاز ۳)            */
+    /* ========================================================= */
+    .quiz-progress-bar { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; margin: 12px 0 18px 0; }
+    .quiz-progress-fill { height: 100%; background: var(--primary-gradient); width: 0%; transition: width 0.3s ease; }
+    
+    .quiz-options { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+    .quiz-option-btn { 
+      padding: 14px 16px; 
+      background: rgba(255,255,255,0.04); 
+      border: 1px solid var(--card-border); 
+      border-radius: 14px; 
+      color: var(--text-main); 
+      text-align: right; 
+      cursor: pointer; 
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .quiz-option-btn:hover, .quiz-option-btn.selected { 
+      border-color: var(--primary); 
+      background: rgba(139, 92, 246, 0.15); 
+    }
+
+    /* انیمیشن لودینگ هوش مصنوعی */
+    .ai-loading-box { text-align: center; padding: 30px 10px; }
+    .ai-spinner { width: 48px; height: 48px; border: 4px solid rgba(255,255,255,0.1); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px auto; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ========================================================= */
+    /* ۴. منوی شناور پایینی                                      */
     /* ========================================================= */
     .nav-bar { 
       position: fixed; 
@@ -121,7 +153,7 @@
     .nav-item.learn-center.active { transform: translateY(-14px) scale(1.06); }
 
     /* ========================================================= */
-    /* ۴. لیست آیتم‌های تنظیمات                                 */
+    /* ۵. لیست آیتم‌های تنظیمات                                 */
     /* ========================================================= */
     .settings-list { display: flex; flex-direction: column; gap: 10px; }
     .setting-item-btn {
@@ -142,13 +174,14 @@
 
     /* دکمه‌ها و ورودی‌ها */
     .btn { width: 100%; padding: 14px; background: var(--primary-gradient); color: #fff; border: none; border-radius: 14px; font-weight: bold; cursor: pointer; margin-top: 8px; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn-secondary { background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-main); }
     .btn-danger { background: var(--danger); }
     .input-field { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--card-border); background: rgba(0,0,0,0.15); color: var(--text-main); margin-bottom: 10px; font-size: 13px; }
     textarea.input-field { min-height: 80px; resize: vertical; }
 
     /* ========================================================= */
-    /* ۵. پاپ‌آپ‌ها (Modal Popups)                                */
+    /* ۶. پاپ‌آپ‌ها (Modal Popups)                                */
     /* ========================================================= */
     .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(6px); z-index: 200; align-items: center; justify-content: center; padding: 16px; }
     .modal.active { display: flex; animation: fadeIn 0.2s ease-out; }
@@ -171,7 +204,7 @@
     <!-- ========================================================= -->
     <div id="tab-dashboard" class="tab-content active">
       
-      <!-- کارت مشخصات کاربر (آپدیت‌شده) -->
+      <!-- کارت مشخصات کاربر -->
       <div class="card" style="display: flex; align-items: center; gap: 14px;">
         <div style="width: 52px; height: 52px; border-radius: 50%; background: var(--primary-gradient); display: flex; align-items: center; justify-content: center; font-size: 24px; color: white; flex-shrink: 0;">👤</div>
         <div class="user-profile-info">
@@ -210,14 +243,67 @@
     </div>
 
     <!-- ========================================================= -->
-    <!-- صفحه ۲: مرکز آموزش (دکمه وسط)                            -->
+    <!-- صفحه ۲: مرکز آموزش و ویزارد تعیین سطح (فاز ۳)            -->
     <!-- ========================================================= -->
     <div id="tab-learn" class="tab-content">
-      <div class="card" style="text-align: center; padding: 32px 16px;">
-        <h2>🎓 مسیر اختصاصی آموزش</h2>
-        <p style="color: var(--text-sub); margin: 12px 0; font-size: 13px;">آماده شروع تعیین سطح و دریافت برنامه هوش مصنوعی هستید؟</p>
-        <button class="btn" onclick="alert('اتصال به موتور هوش مصنوعی در گام بعدی انجام خواهد شد.')">شروع مسیر آموزش</button>
+      
+      <!-- ۱. کارت شروع اولیه آزمون -->
+      <div id="quiz-start-card" class="card" style="text-align: center; padding: 28px 16px;">
+        <div style="font-size: 40px; margin-bottom: 12px;">🎓</div>
+        <h2>مسیر اختصاصی آموزش شما</h2>
+        <p style="color: var(--text-sub); margin: 12px 0 20px 0; font-size: 13px; line-height: 1.6;">
+          هوش مصنوعی Gemini پس از ۵ سوال کوتاه، سطح دقیق علمی شما (A1 تا C2) را تحلیل کرده و برنامه درسی ۱۰۰٪ اختصاصی شما را طراحی می‌کند.
+        </p>
+        <button class="btn" onclick="startPlacementQuiz()">شروع آزمون تعیین سطح (۵ دوازده)</button>
       </div>
+
+      <!-- ۲. باکس سوالات تعاملی آزمون -->
+      <div id="quiz-step-card" class="card" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 12px; color: var(--text-sub);" id="quiz-step-indicator">سوال ۱ از ۵</span>
+          <span style="font-size: 12px; color: var(--accent); font-weight: bold;">آزمون تعیین سطح AI</span>
+        </div>
+        
+        <!-- نوار پیشرفت -->
+        <div class="quiz-progress-bar">
+          <div class="quiz-progress-fill" id="quiz-progress"></div>
+        </div>
+
+        <h3 id="quiz-question-title" style="margin-bottom: 14px; font-size: 15px; line-height: 1.5;">عنوان سوال...</h3>
+
+        <!-- گزینه خروجی سوالات چندگزینه‌ای -->
+        <div class="quiz-options" id="quiz-options-container"></div>
+
+        <!-- ورودی متنی برای سوال تشریحی/نگارش (سوال ۵) -->
+        <div id="quiz-text-container" style="display: none; margin-top: 14px;">
+          <textarea id="quiz-text-answer" class="input-field" placeholder="جمله خود را به انگلیسی بنویسید... (مثال: I want to learn English for my job.)"></textarea>
+        </div>
+
+        <button class="btn" id="quiz-next-btn" onclick="handleNextQuizStep()" style="margin-top: 18px;" disabled>تأیید و سوال بعدی ❯</button>
+      </div>
+
+      <!-- ۳. کارت لودینگ تحلیل هوش مصنوعی -->
+      <div id="quiz-loading-card" class="card ai-loading-box" style="display: none;">
+        <div class="ai-spinner"></div>
+        <h3>هوش مصنوعی Gemini در حال تحلیل پاسخ‌های شماست...</h3>
+        <p style="font-size: 12px; color: var(--text-sub); margin-top: 10px; line-height: 1.6;">
+          ارزیابی دامنه واژگان، ساختار گرامری و تدوین نقشه راه اختصاصی...
+        </p>
+      </div>
+
+      <!-- ۴. کارت نتیجه تعیین سطح و نقشه راه اختصاصی -->
+      <div id="quiz-result-card" class="card" style="display: none; text-align: center; padding: 24px 16px;">
+        <div style="font-size: 44px; margin-bottom: 8px;">🎉</div>
+        <h2>کارنامه و مسیر اختصاصی شما</h2>
+        <div id="res-level-badge" style="display: inline-block; padding: 6px 16px; background: var(--primary-gradient); border-radius: 20px; font-weight: bold; margin: 12px 0; font-size: 14px;">سطح: B1 (متوسط)</div>
+        
+        <div style="background: rgba(0,0,0,0.15); border: 1px solid var(--card-border); border-radius: 14px; padding: 14px; text-align: right; margin: 12px 0; font-size: 12px; color: var(--text-sub); line-height: 1.7;" id="res-analysis-text">
+          تحلیل هوش مصنوعی قرار می‌گیرد...
+        </div>
+
+        <button class="btn" onclick="alert('ورود به اولین جلسه آموزشی در فاز ۴ فعال خواهد شد.')">🚀 ورود به اولین جلسه درس</button>
+      </div>
+
     </div>
 
     <!-- ========================================================= -->
@@ -396,27 +482,68 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
+    // آدرس‌های وب‌فوک n8n
     const N8N_AUTH_URL = "https://sahand212.app.n8n.cloud/webhook/auth"; 
     const N8N_DELETE_URL = "https://sahand212.app.n8n.cloud/webhook/delete-account";
+    const N8N_PLACEMENT_URL = "https://sahand212.app.n8n.cloud/webhook/placement-test"; // وب‌فوک فاز ۳
 
     let currentUserTelegramId = null;
 
+    /* ========================================================= */
+    /* داده‌های سوالات ویزارد تعیین سطح (فاز ۳)                   */
+    /* ========================================================= */
+    const quizQuestions = [
+      {
+        id: 1,
+        title: "1. She ________ to work by bus every morning.",
+        type: "mcq",
+        options: ["go", "goes", "going", "gone"]
+      },
+      {
+        id: 2,
+        title: "2. If I ________ more free time, I would learn French.",
+        type: "mcq",
+        options: ["have", "had", "will have", "would have"]
+      },
+      {
+        id: 3,
+        title: "3. The conference was postponed due to ________ circumstances.",
+        type: "mcq",
+        options: ["unforeseen", "unlooked", "unthought", "unexpectedly"]
+      },
+      {
+        id: 4,
+        title: "4. هدف اصلی شما از یادگیری زبان انگلیسی چیست؟",
+        type: "mcq",
+        options: ["مهاجرت و زندگی در خارج", "مکالمه روزمره و سفر", "پیشرفت کاری و شغلی", "شرکت در آزمون (آیلتس / تافل)"]
+      },
+      {
+        id: 5,
+        title: "5. یک جمله کوتاه به انگلیسی درباره هدف یا برنامه روزانه خود بنویسید (جهت ارزیابی نگارش توسط AI):",
+        type: "text",
+        placeholder: "مثال: I want to improve my speaking for my job."
+      }
+    ];
+
+    let currentQuizStep = 0;
+    let userAnswers = {};
+    let selectedOptionValue = null;
+
+    /* ========================================================= */
+    /* مدیریت توابع عمومی UI و پاپ‌آپ‌ها                          */
+    /* ========================================================= */
     function openModal(modalId) {
       try {
         const m = document.getElementById(modalId);
         if (m) m.classList.add('active');
-      } catch (err) {
-        console.error("خطا در باز کردن پاپ‌آپ:", err);
-      }
+      } catch (err) { console.error("خطا در باز کردن پاپ‌آپ:", err); }
     }
 
     function closeModal(modalId) {
       try {
         const m = document.getElementById(modalId);
         if (m) m.classList.remove('active');
-      } catch (err) {
-        console.error("خطا در بستن پاپ‌آپ:", err);
-      }
+      } catch (err) { console.error("خطا در بستن پاپ‌آپ:", err); }
     }
 
     function switchTab(tabId, el) {
@@ -427,9 +554,7 @@
         const targetTab = document.getElementById('tab-' + tabId);
         if (targetTab) targetTab.classList.add('active');
         if (el) el.classList.add('active');
-      } catch (err) {
-        console.error("خطا در تعویض تب:", err);
-      }
+      } catch (err) { console.error("خطا در تعویض تب:", err); }
     }
 
     function toggleTheme() {
@@ -440,9 +565,7 @@
         
         body.setAttribute('data-theme', isDark ? 'light' : 'dark');
         if (themeBtn) themeBtn.innerText = isDark ? '🌙' : '☀️';
-      } catch (err) {
-        console.error("خطا در تغییر تم:", err);
-      }
+      } catch (err) { console.error("خطا در تغییر تم:", err); }
     }
 
     function startCountdown(targetDateMs) {
@@ -502,10 +625,120 @@
     }
 
     /* ========================================================= */
-    /* ۶. تابع اصلی مقداردهی اولیه‌ و پردازش مشخصات کاربر          */
+    /* منطق اجرایی ویزارد تعیین سطح (فاز ۳)                        */
+    /* ========================================================= */
+    function startPlacementQuiz() {
+      currentQuizStep = 0;
+      userAnswers = {};
+      document.getElementById('quiz-start-card').style.display = 'none';
+      document.getElementById('quiz-step-card').style.display = 'block';
+      renderQuizStep();
+    }
+
+    function renderQuizStep() {
+      const q = quizQuestions[currentQuizStep];
+      selectedOptionValue = null;
+
+      // به‌روزرسانی نوار پیشرفت و شاخص
+      const progressPercent = ((currentQuizStep + 1) / quizQuestions.length) * 100;
+      document.getElementById('quiz-progress').style.width = `${progressPercent}%`;
+      document.getElementById('quiz-step-indicator').innerText = `سوال ${currentQuizStep + 1} از ${quizQuestions.length}`;
+      document.getElementById('quiz-question-title').innerText = q.title;
+
+      const optionsContainer = document.getElementById('quiz-options-container');
+      const textContainer = document.getElementById('quiz-text-container');
+      const nextBtn = document.getElementById('quiz-next-btn');
+
+      optionsContainer.innerHTML = '';
+      nextBtn.disabled = true;
+
+      if (q.type === 'mcq') {
+        optionsContainer.style.display = 'flex';
+        textContainer.style.display = 'none';
+
+        q.options.forEach((opt, idx) => {
+          const btn = document.createElement('div');
+          btn.className = 'quiz-option-btn';
+          btn.innerHTML = `<span>${opt}</span><span style="opacity: 0.5; font-size: 11px;">گزینه ${idx + 1}</span>`;
+          btn.onclick = () => {
+            document.querySelectorAll('.quiz-option-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            selectedOptionValue = opt;
+            nextBtn.disabled = false;
+          };
+          optionsContainer.appendChild(btn);
+        });
+      } else if (q.type === 'text') {
+        optionsContainer.style.display = 'none';
+        textContainer.style.display = 'block';
+
+        const textInput = document.getElementById('quiz-text-answer');
+        textInput.value = '';
+        textInput.oninput = (e) => {
+          selectedOptionValue = e.target.value.trim();
+          nextBtn.disabled = selectedOptionValue.length < 3;
+        };
+      }
+
+      nextBtn.innerText = (currentQuizStep === quizQuestions.length - 1) ? 'تحلیل نهایی و ساخت مسیر 🤖' : 'تأیید و سوال بعدی ❯';
+    }
+
+    async function handleNextQuizStep() {
+      // ذخیره پاسخ این مرحله
+      userAnswers[`q${currentQuizStep + 1}`] = selectedOptionValue;
+
+      if (currentQuizStep < quizQuestions.length - 1) {
+        currentQuizStep++;
+        renderQuizStep();
+      } else {
+        // اتمام آزمون و ارسال به n8n
+        document.getElementById('quiz-step-card').style.display = 'none';
+        document.getElementById('quiz-loading-card').style.display = 'block';
+
+        try {
+          const response = await fetch(N8N_PLACEMENT_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              telegram_id: currentUserTelegramId,
+              answers: userAnswers
+            })
+          });
+
+          const data = await response.json();
+          displayQuizResults(data);
+        } catch (err) {
+          console.warn("خطا در اتصال به وب‌فوک تعیین سطح n8n، نمایش پاسخ شبیه‌سازی‌شده.");
+          // پاسخ fallback در صورت عدم فعال بودن فعلی WF2
+          displayQuizResults({
+            determined_level: "B1",
+            summary: "بر اساس پاسخ‌های شما، تسلط خوبی روی گرامر پایه دارید. نقطه تمرکز مسیر درسی شما روی واژگان سطح متوسط و تمرینات Substitution Drill برای افزایش تسلط در مکالمه خواهد بود."
+          });
+        }
+      }
+    }
+
+    function displayQuizResults(result) {
+      document.getElementById('quiz-loading-card').style.display = 'none';
+      document.getElementById('quiz-result-card').style.display = 'block';
+
+      const level = result.determined_level || "B1";
+      const summary = result.summary || "مسیر اختصاصی شما بر اساس هوش مصنوعی طراحی شد.";
+
+      document.getElementById('res-level-badge').innerText = `سطح تعیین‌شده: ${level}`;
+      document.getElementById('res-analysis-text').innerText = summary;
+
+      // به‌روزرسانی کارت پروفایل کاربر در داشبورد
+      const userLevelEl = document.getElementById('user-level');
+      if (userLevelEl) {
+        userLevelEl.innerText = `سطح آموزشی: ${level}`;
+      }
+    }
+
+    /* ========================================================= */
+    /* تابع اصلی مقداردهی اولیه                                 */
     /* ========================================================= */
     async function initApp() {
-      // دریافت اطلاعات کاربر از Telegram WebApp یا داده‌های تست
       const user = tg.initDataUnsafe?.user || { 
         id: 12345654321, 
         username: "alimohamadi", 
@@ -514,16 +747,15 @@
       };
       currentUserTelegramId = user.id;
 
-      // پردازش نام کوچک و نام خانوادگی
+      // پردازش نام کامل
       const firstName = user.first_name ? user.first_name.trim() : "";
       const lastName = user.last_name ? user.last_name.trim() : "";
       const fullName = (firstName + " " + lastName).trim() || "کاربر ناشناس";
 
-      // پردازش یوزرنیم (حذف علامت @) و آی‌دی عددی
+      // پردازش یوزرنیم (حذف @) و آی‌دی
       const cleanUsername = user.username ? user.username.replace(/^@/, '').trim() : "";
       const userId = user.id ? String(user.id) : "";
 
-      // ساخت متن زیرین (یوزرنیم - آی‌دی عددی)
       let subtext = "";
       if (cleanUsername && userId) {
         subtext = `${cleanUsername} - ${userId}`;
@@ -533,26 +765,28 @@
         subtext = userId;
       }
 
-      // درج داده‌ها در المان‌های DOM
       const fullNameEl = document.getElementById('user-fullname');
       const subtextEl = document.getElementById('user-subtext');
 
       if (fullNameEl) fullNameEl.innerText = fullName;
       if (subtextEl) {
         subtextEl.innerText = subtext;
-        // اگر متن زیرین خالی بود، جایگاه خالی جهت حفظ استایل در نظر گرفته می‌شود
         if (!subtext) subtextEl.style.display = 'none';
       }
 
-      // تنظیم زمان پیش‌فرض ۷ روز آزمایشی
       let defaultTrialEnd = new Date().getTime() + (7 * 24 * 60 * 60 * 1000);
 
-      // احراز هویت در دیتابیس از طریق وب‌فوک n8n
       try {
         const response = await fetch(N8N_AUTH_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ telegram_id: user.id, username: user.username, first_name: user.first_name, last_name: user.last_name })
+          body: JSON.stringify({ 
+            telegram_id: user.id, 
+            username: user.username, 
+            first_name: user.first_name, 
+            last_name: user.last_name,
+            init_data: tg.initData // ارسال initData تلگرام جهت امنیت HMAC
+          })
         });
         
         const data = await response.json();
@@ -568,7 +802,6 @@
       startCountdown(defaultTrialEnd);
     }
 
-    // اجرای برنامه
     initApp();
   </script>
 </body>

@@ -831,28 +831,32 @@
         const data = await response.json();
         const userData = Array.isArray(data) ? data[0] : data;
 
-        if (userData) {
-          if (userData.trial_ends_at) {
-            defaultTrialEnd = new Date(userData.trial_ends_at).getTime();
-          }
+        console.log("اطلاعات دريافتی کاربر از بک‌اند:", userData);
 
-          // 🎯 بررسی اینکه آیا کاربر قبلاً تعیین سطح شده است یا خیر
-          if (userData.determined_level) {
-            // ۱. پنهان کردن کارت شروع آزمون و نمایش مستقیم کارت نتیجه/مسیر
-            document.getElementById('quiz-start-card').style.display = 'none';
-        
-            displayQuizResults({
-              determined_level: userData.determined_level,
-              summary: userData.ai_analysis_summary || "مسیر اختصاصی آموزشی شما فعال است."
-            });
-          }
+        // 🎯 بررسی اینکه آیا کاربر قبلاً تعیین سطح شده است یا خیر
+        if (userData && userData.determined_level) {
+          // مخفی کردن تمام کارت‌های مربوط به مراحل آزمون
+          const startCard = document.getElementById('quiz-start-card');
+          const stepCard = document.getElementById('quiz-step-card');
+          const loadingCard = document.getElementById('quiz-loading-card');
+
+          if (startCard) startCard.style.display = 'none';
+          if (stepCard) stepCard.style.display = 'none';
+          if (loadingCard) loadingCard.style.display = 'none';
+
+          // نمایش کارنامه و مسیر درسی
+          displayQuizResults({
+            determined_level: userData.determined_level,
+            summary: userData.ai_analysis_summary || "مسیر اختصاصی آموزشی شما فعال است."
+          });
         }
       } catch (err) {
-        console.warn("خطا در دریافت وضعیت کاربر از بک‌اند، استفاده از حالت اولیه.", err);
+        console.warn("خطا در دریافت وضعیت کاربر از بک‌اند:", err);
       }
 
       startCountdown(defaultTrialEnd);
     }
+
 
     initApp();
   </script>

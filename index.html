@@ -683,15 +683,41 @@
       nextBtn.innerText = (currentQuizStep === quizQuestions.length - 1) ? 'تحلیل نهایی و ساخت مسیر 🤖' : 'تأیید و سوال بعدی ❯';
     }
 
+      // نقشه توصیف ملموس سطوح زبان
+      const levelDescriptions = {
+      "A1": {
+        title: "A1 — مبتدی (Elementary)",
+        desc: "شما در ابتدای مسیر جذاب یادگیری هستید. در این سطح، واژگان پایه، احوالپرسی‌ها و ساختار جملات ساده روزمره را فرامی‌گیرید."
+      },
+      "A2": {
+        title: "A2 — پیش‌مبتدی (Pre-Intermediate)",
+        desc: "شما شالوده زبان را دارید. در این سطح توانایی ارتباط در موقعیت‌های روزمره، خرید، معرفی خود و بیان نیازهای اولیه را تقویت می‌کنید."
+      },
+      "B1": {
+        title: "B1 — متوسط (Intermediate)",
+        desc: "شما آماده مکالمات واقعی هستید! در این سطح می‌توانید درباره تجربیات، اهداف، سفر و موضوعات کاری به‌راحتی گفتگو کنید."
+      },
+      "B2": {
+        title: "B2 — فوق‌متوسط (Upper-Intermediate)",
+        desc: "تسلط شما عالی است. در این سطح می‌توانید بدون آمادگی قبلی روان صحبت کنید، فیلم‌ها را درک کرده و استدلال‌های پیچیده بیاورید."
+      },
+      "C1": {
+        title: "C1 — پیشرفته (Advanced)",
+        desc: "سطح حرفه‌ای و آکادمیک. شما قادر به درک متون طولانی، اصطلاحات پیچیده و شرکت در جلسات تخصصی بدون کندی هستید."
+      },
+      "C2": {
+        title: "C2 — تسلط کامل (Mastery)",
+        desc: "سطح نزدیک به گوینده مادری (Native). درک دقیق و بی‌نقص ریزه‌کاری‌های زبان، طنزها و نگارش‌های پیشرفته."
+      }
+    };
+
     async function handleNextQuizStep() {
-      // ذخیره پاسخ این مرحله
       userAnswers[`q${currentQuizStep + 1}`] = selectedOptionValue;
 
       if (currentQuizStep < quizQuestions.length - 1) {
         currentQuizStep++;
         renderQuizStep();
       } else {
-        // اتمام آزمون و ارسال به n8n
         document.getElementById('quiz-step-card').style.display = 'none';
         document.getElementById('quiz-loading-card').style.display = 'block';
 
@@ -706,14 +732,14 @@
           });
 
           const data = await response.json();
-          displayQuizResults(data);
+          // پشتیبانی از هر دو حالت پاسخ آرایه‌ای یا شیء تکی از n8n
+          const resultData = Array.isArray(data) ? data[0] : data;
+          displayQuizResults(resultData);
         } catch (err) {
-          console.warn("خطا در اتصال به وب‌فوک تعیین سطح n8n، نمایش پاسخ شبیه‌سازی‌شده.");
-          // پاسخ fallback در صورت عدم فعال بودن فعلی WF2
-          displayQuizResults({
-            determined_level: "B1",
-            summary: "بر اساس پاسخ‌های شما، تسلط خوبی روی گرامر پایه دارید. نقطه تمرکز مسیر درسی شما روی واژگان سطح متوسط و تمرینات Substitution Drill برای افزایش تسلط در مکالمه خواهد بود."
-          });
+          console.error("خطا در دریافت پاسخ n8n:", err);
+          alert("خطا در برقراری ارتباط با هوش مصنوعی. لطفاً دوباره تلاش کنید.");
+          document.getElementById('quiz-loading-card').style.display = 'none';
+          document.getElementById('quiz-step-card').style.display = 'block';
         }
       }
     }
@@ -722,16 +748,37 @@
       document.getElementById('quiz-loading-card').style.display = 'none';
       document.getElementById('quiz-result-card').style.display = 'block';
 
-      const level = result.determined_level || "B1";
-      const summary = result.summary || "مسیر اختصاصی شما بر اساس هوش مصنوعی طراحی شد.";
+      // استخراج سطح و پاکسازی فاصله/حروف
+      const rawLevel = (result.determined_level || "A1").trim().toUpperCase();
+      const summary = result.summary || result.ai_analysis_summary || "مسیر اختصاصی آموزشی شما با موفقیت طراحی شد.";
 
-      document.getElementById('res-level-badge').innerText = `سطح تعیین‌شده: ${level}`;
-      document.getElementById('res-analysis-text').innerText = summary;
+      // دریافت توصیف ملموس بر اساس سطح
+      const levelInfo = levelDescriptions[rawLevel] || levelDescriptions["A1"];
 
-      // به‌روزرسانی کارت پروفایل کاربر در داشبورد
+      // به‌روزرسانی UI کارنامه
+      document.getElementById('res-level-badge').innerText = levelInfo.title;
+  
+      // ترکیب توصیف ملموس + تحلیل اختصاصی Gemini
+      document.getElementById('res-analysis-text').innerHTML = `
+        <div style="margin-bottom: 10px; font-weight: bold; color: var(--accent);">
+          📌 ارزیابی کلی سطح شما:
+        </div>
+        <div style="margin-bottom: 12px; color: var(--text-main);">
+          ${levelInfo.desc}
+        </div>
+        <hr style="border:0; border-top:1px solid var(--card-border); margin:10px 0;">
+        <div style="margin-bottom: 6px; font-weight: bold; color: var(--accent);">
+          🤖 تحلیل اختصاصی هوش مصنوعی (Gemini):
+        </div>
+        <div>
+          ${summary}
+        </div>
+      `;
+
+      // به‌روزرسانی مشخصات کاربر در داشبورد
       const userLevelEl = document.getElementById('user-level');
       if (userLevelEl) {
-        userLevelEl.innerText = `سطح آموزشی: ${level}`;
+        userLevelEl.innerText = `سطح آموزشی: ${levelInfo.title}`;
       }
     }
 

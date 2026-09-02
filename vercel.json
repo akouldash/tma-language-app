@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/n8n/:path*",
-      "destination": "https://sahand212.app.n8n.cloud/webhook/:path*"
+      "destination": "https://sahand212.app.n8n.cloud/webhook/webhook-test/:path*"
     }
   ]
 }

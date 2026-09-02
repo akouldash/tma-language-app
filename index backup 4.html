@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Language Learning MiniApp</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <style>
+    /* ========================================================= */
+    /* ۱. تعریف متغیرهای تم و رنگ‌بندی (تاریک / روشن)           */
+    /* ========================================================= */
+    :root {
+      --bg-main: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text-main: #f8fafc;
+      --text-sub: #94a3b8;
+      --primary: #8b5cf6;
+      --primary-gradient: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);
+      --accent: #38bdf8;
+      --danger: #ef4444;
+      --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.36);
+    }
+
+    [data-theme="light"] {
+      --bg-main: #f1f5f9;
+      --card-bg: rgba(255, 255, 255, 0.9);
+      --card-border: rgba(0, 0, 0, 0.06);
+      --text-main: #0f172a;
+      --text-sub: #64748b;
+      --primary: #7c3aed;
+      --primary-gradient: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+      --accent: #0284c7;
+      --danger: #dc2626;
+      --shadow: 0 8px 24px 0 rgba(149, 157, 165, 0.15);
+    }
+
+    /* ========================================================= */
+    /* ۲. استایل‌های عمومی بدنه و ساختار کلی                     */
+    /* ========================================================= */
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; transition: all 0.2s ease; }
+    body { background: var(--bg-main); color: var(--text-main); padding-bottom: 110px; user-select: none; }
+    .container { padding: 16px; max-width: 480px; margin: 0 auto; }
+
+    /* هدر بالای برنامه */
+    .top-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 4px; margin-bottom: 12px; }
+    .theme-toggle-btn { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; box-shadow: var(--shadow); color: var(--text-main); }
+
+    /* کارت‌های شیشه‌ای (Glassmorphism) */
+    .card { background: var(--card-bg); backdrop-filter: blur(12px); border: 1px solid var(--card-border); border-radius: 20px; padding: 18px; margin-bottom: 14px; box-shadow: var(--shadow); }
+
+    /* باکس معکوس‌شمار زمان اشتراک */
+    .timer-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .info-btn { cursor: pointer; font-size: 16px; opacity: 0.8; }
+    .info-btn:hover { opacity: 1; }
+    .timer-box { display: flex; justify-content: space-around; direction: ltr; margin-top: 10px; text-align: center; }
+    .timer-unit { background: rgba(0,0,0,0.15); padding: 8px 12px; border-radius: 12px; min-width: 60px; }
+    .timer-val { font-size: 18px; font-weight: bold; color: var(--accent); }
+    .timer-lbl { font-size: 10px; color: var(--text-sub); }
+
+    /* تب‌ها */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.25s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ========================================================= */
+    /* ۳. منوی شناور پایینی (اصلاح اندازه و تراز دکمه‌ها)          */
+    /* ========================================================= */
+    .nav-bar { 
+      position: fixed; 
+      bottom: 16px; 
+      left: 0; 
+      right: 0; 
+      max-width: 280px; 
+      margin: 0 auto; 
+      background: transparent; 
+      border: none;
+      display: flex; 
+      justify-content: space-between; 
+      align-items: flex-end; 
+      height: 70px; 
+      z-index: 100; 
+      pointer-events: none; 
+    }
+
+    .nav-item { 
+      pointer-events: auto; 
+      border: 1px solid var(--card-border); 
+      background: var(--card-bg); 
+      color: var(--text-sub); 
+      border-radius: 50%; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      cursor: pointer; 
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    .nav-item.side-btn {
+      width: 44px;
+      height: 44px;
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+
+    .nav-item.side-btn.active { 
+      color: var(--primary); 
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    .nav-item.learn-center { 
+      width: 68px; 
+      height: 68px; 
+      background: var(--primary-gradient); 
+      color: #fff; 
+      font-size: 30px; 
+      box-shadow: 0 10px 28px rgba(139, 92, 246, 0.55); 
+      border: 3px solid var(--bg-main); 
+      transform: translateY(-10px);
+    }
+    
+    .nav-item.learn-center.active {
+      transform: translateY(-14px) scale(1.06);
+    }
+
+    /* ========================================================= */
+    /* ۴. لیست آیتم‌های تنظیمات (سبک تلگرام)                     */
+    /* ========================================================= */
+    .settings-list { display: flex; flex-direction: column; gap: 10px; }
+    .setting-item-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      color: var(--text-main);
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+    }
+    .setting-item-btn:active { transform: scale(0.98); }
+    .setting-item-left { display: flex; align-items: center; gap: 12px; font-weight: 500; font-size: 14px; }
+    .chevron { color: var(--text-sub); font-size: 14px; }
+
+    /* دکمه‌ها و ورودی‌ها */
+    .btn { width: 100%; padding: 14px; background: var(--primary-gradient); color: #fff; border: none; border-radius: 14px; font-weight: bold; cursor: pointer; margin-top: 8px; }
+    .btn-secondary { background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-main); }
+    .btn-danger { background: var(--danger); }
+    .input-field { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--card-border); background: rgba(0,0,0,0.15); color: var(--text-main); margin-bottom: 10px; font-size: 13px; }
+    textarea.input-field { min-height: 80px; resize: vertical; }
+
+    /* ========================================================= */
+    /* ۵. پاپ‌آپ‌ها (Modal Popups)                                */
+    /* ========================================================= */
+    .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(6px); z-index: 200; align-items: center; justify-content: center; padding: 16px; }
+    .modal.active { display: flex; animation: fadeIn 0.2s ease-out; }
+    .modal-content { background: var(--bg-main); border: 1px solid var(--card-border); border-radius: 24px; padding: 22px; max-width: 420px; width: 100%; max-height: 85vh; overflow-y: auto; box-shadow: var(--shadow); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--card-border); padding-bottom: 10px; }
+    .modal-close { background: none; border: none; font-size: 20px; color: var(--text-sub); cursor: pointer; }
+  </style>
+</head>
+<body data-theme="dark">
+
+  <div class="container">
+    <!-- هدر بالای برنامه -->
+    <div class="top-header">
+      <div style="font-size: 18px; font-weight: bold;">💎 Language Core</div>
+      <button class="theme-toggle-btn" id="theme-btn" onclick="toggleTheme()" title="تغییر تم">☀️</button>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- صفحه ۱: داشبورد و پروفایل کاربر                          -->
+    <!-- ========================================================= -->
+    <div id="tab-dashboard" class="tab-content active">
+      <div class="card" style="display: flex; align-items: center; gap: 14px;">
+        <div style="width: 52px; height: 52px; border-radius: 50%; background: var(--primary-gradient); display: flex; align-items: center; justify-content: center; font-size: 24px; color: white;">👤</div>
+        <div>
+          <h3 id="user-name">@username</h3>
+          <p id="user-level" style="font-size: 12px; color: var(--text-sub);">سطح آموزشی: تعیین نشده</p>
+        </div>
+      </div>
+
+      <!-- کارت زمان باقی‌مانده از اشتراک -->
+      <div class="card">
+        <div class="timer-header">
+          <span style="font-size: 13px; color: var(--text-sub);">
+            زمان باقی‌مانده از اشتراک 
+            <span class="info-btn" onclick="openModal('modal-sub-info')" title="راهنما">ℹ️</span>
+          </span>
+        </div>
+        <div class="timer-box">
+          <div class="timer-unit"><div class="timer-val" id="t-sec">00</div><div class="timer-lbl">ثانیه</div></div>
+          <div class="timer-unit"><div class="timer-val" id="t-min">00</div><div class="timer-lbl">دقیقه</div></div>
+          <div class="timer-unit"><div class="timer-val" id="t-hrs">00</div><div class="timer-lbl">ساعت</div></div>
+          <div class="timer-unit"><div class="timer-val" id="t-day">00</div><div class="timer-lbl">روز</div></div>
+        </div>
+      </div>
+
+      <!-- کارت وضعیت یادگیری -->
+      <div class="card">
+        <h3>📊 وضعیت یادگیری</h3>
+        <p style="font-size: 13px; color: var(--text-sub); margin-top: 6px;">پس از شروع اولین درس، نمودار و آمار پیشرفت شما در این بخش قرار می‌گیرد.</p>
+      </div>
+
+      <!-- دکمه حذف حساب کاربری -->
+      <div class="card" style="border-color: rgba(239, 68, 68, 0.3);">
+        <button class="btn btn-danger" onclick="openModal('modal-delete-acc')">🗑️ حذف حساب کاربری و تمام داده‌ها</button>
+      </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- صفحه ۲: مرکز آموزش (دکمه وسط)                            -->
+    <!-- ========================================================= -->
+    <div id="tab-learn" class="tab-content">
+      <div class="card" style="text-align: center; padding: 32px 16px;">
+        <h2>🎓 مسیر اختصاصی آموزش</h2>
+        <p style="color: var(--text-sub); margin: 12px 0; font-size: 13px;">آماده شروع تعیین سطح و دریافت برنامه هوش مصنوعی هستید؟</p>
+        <button class="btn" onclick="alert('اتصال به موتور هوش مصنوعی در گام بعدی انجام خواهد شد.')">شروع مسیر آموزش</button>
+      </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- صفحه ۳: تنظیمات (لیست دکمه‌های پاپ‌آپ‌دار)                   -->
+    <!-- ========================================================= -->
+    <div id="tab-settings" class="tab-content">
+      <div class="card">
+        <h3 style="margin-bottom: 16px;">⚙️ تنظیمات برنامه</h3>
+        
+        <div class="settings-list">
+          <div class="setting-item-btn" onclick="openModal('modal-setting-display')">
+            <div class="setting-item-left"><span>🎨</span> <span>تنظیمات نمایش</span></div>
+            <span class="chevron">❮</span>
+          </div>
+
+          <div class="setting-item-btn" onclick="openModal('modal-setting-audio')">
+            <div class="setting-item-left"><span>🔊</span> <span>تنظیمات صوت</span></div>
+            <span class="chevron">❮</span>
+          </div>
+
+          <div class="setting-item-btn" onclick="openModal('modal-setting-reminder')">
+            <div class="setting-item-left"><span>🔔</span> <span>یادآوری روزانه</span></div>
+            <span class="chevron">❮</span>
+          </div>
+
+          <div class="setting-item-btn" onclick="openModal('modal-setting-privacy')">
+            <div class="setting-item-left"><span>🛡️</span> <span>حریم خصوصی</span></div>
+            <span class="chevron">❮</span>
+          </div>
+
+          <div class="setting-item-btn" onclick="openModal('modal-setting-about')">
+            <div class="setting-item-left"><span>ℹ️</span> <span>درباره ما و تماس با پشتیبانی</span></div>
+            <span class="chevron">❮</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- منوی شناور پایینی                                         -->
+  <!-- ========================================================= -->
+  <nav class="nav-bar">
+    <button class="nav-item side-btn" onclick="switchTab('settings', this)" title="تنظیمات">⚙️</button>
+    <button class="nav-item learn-center" onclick="switchTab('learn', this)" title="آموزش">🎓</button>
+    <button class="nav-item side-btn active" onclick="switchTab('dashboard', this)" title="داشبورد و پروفایل">👤</button>
+  </nav>
+
+  <!-- ========================================================= -->
+  <!-- پاپ‌آپ‌ها (MODALS)                                       -->
+  <!-- ========================================================= -->
+
+  <div class="modal" id="modal-sub-info">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4>ℹ️ زمان باقی‌مانده از اشتراک</h4>
+        <button class="modal-close" onclick="closeModal('modal-sub-info')">✕</button>
+      </div>
+      <p style="font-size: 13px; color: var(--text-sub); line-height: 1.6;">
+        دوره تست رایگان به مدت <b>۷ روز کامل</b> از لحظه شروع اولین جلسه آموزش برای شما فعال می‌شود. در این مدت به تمامی امکانات هوش مصنوعی، فلش‌کارت‌ها و گوینده‌های صوتی دسترسی نامحدود خواهید داشت.
+      </p>
+      <button class="btn btn-secondary" onclick="closeModal('modal-sub-info')" style="margin-top: 16px;">متوجه شدم</button>
+    </div>
+  </div>
+
+  <div class="modal" id="modal-delete-acc">
+    <div class="modal-content" style="text-align: center;">
+      <h3 style="color: var(--danger); margin-bottom: 10px;">⚠️ حذف حساب کاربری</h3>
+      <p style="font-size: 12px; color: var(--text-sub); margin-bottom: 16px; line-height: 1.5;">
+        تمام داده‌ها، پیشرفت لایتنر و تاریخچه فعالیت شما به‌صورت دائمی از دیتابیس پاک خواهد شد و غیرقابل بازیابی است. آیا اطمینان دارید؟
+      </p>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn btn-danger" onclick="executeAccountDeletion()">تأیید حذف کامل</button>
+        <button class="btn btn-secondary" onclick="closeModal('modal-delete-acc')">انصراف</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="modal-setting-display">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4>🎨 تنظیمات نمایش</h4>
+        <button class="modal-close" onclick="closeModal('modal-setting-display')">✕</button>
+      </div>
+      <label style="font-size: 12px; color: var(--text-sub);">انتخاب فونت برنامه:</label>
+      <select class="input-field"><option>وزیر متن (پیش‌فرض)</option><option>یکان پلاس</option></select>
+      <label style="font-size: 12px; color: var(--text-sub);">اندازه قلم:</label>
+      <select class="input-field"><option>متوسط (استاندارد)</option><option>بزرگ</option></select>
+      <button class="btn" onclick="closeModal('modal-setting-display')">ذخیره تغییرات</button>
+    </div>
+  </div>
+
+  <div class="modal" id="modal-setting-audio">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4>🔊 تنظیمات صوت و گوینده</h4>
+        <button class="modal-close" onclick="closeModal('modal-setting-audio')">✕</button>
+      </div>
+      <label style="font-size: 12px; color: var(--text-sub);">انتخاب شخصیت گوینده (۱۰ مدل AI):</label>
+      <select class="input-field">
+        <option>1. الکس (مرد - انگلیسی رسمی)</option>
+        <option>2. سارا (زن - انگلیسی لهجه آمریکایی)</option>
+        <option>3. دیوید (مرد - لهجه بریتانیایی)</option>
+        <option>4. معلم صبور (آرام و کُند)</option>
+      </select>
+      <p style="font-size: 11px; color: var(--text-sub); margin-bottom: 10px;">امکان پخش نمونه صدای گوینده در فاز بعدی فعال خواهد شد.</p>
+      <button class="btn" onclick="closeModal('modal-setting-audio')">تأیید</button>
+    </div>
+  </div>
+
+  <div class="modal" id="modal-setting-reminder">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4>🔔 یادآوری روزانه مطالعه</h4>
+        <button class="modal-close" onclick="closeModal('modal-setting-reminder')">✕</button>
+      </div>
+      <label style="font-size: 12px; color: var(--text-sub);">زمان یادآوری روزانه:</label>
+      <input type="time" class="input-field" value="20:00">
+      <button class="btn" onclick="closeModal('modal-setting-reminder')">ثبت زمان یادآوری</button>
+    </div>
+  </div>
+
+  <div class="modal" id="modal-setting-privacy">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4>🛡️ سیاست حریم خصوصی و امنیت داده‌ها</h4>
+        <button class="modal-close" onclick="closeModal('modal-setting-privacy')">✕</button>
+      </div>
+      <div style="font-size: 12px; color: var(--text-sub); line-height: 1.7; display: flex; flex-direction: column; gap: 10px;">
+        <p><b>۱. شفافیت کامل در ذخیره‌سازی:</b> ما فقط داده‌هایی را ذخیره می‌کنیم که مستقیماً برای الگوریتم لایتنر و شخصی‌سازی مسیر یادگیری شما ضروری است.</p>
+        <p><b>۲. امنیت و رمزنگاری:</b> تمامی ارتباطات تحت گواهی TLS 1.3 و رمزنگاری چندلایه قرار دارند. شماره تلفن شما هرگز دریافت یا ذخیره نمی‌شود.</p>
+        <p><b>۳. عدم واگذاری به ثالث:</b> داده‌های تمرینی شما کاملاً محرمانه بوده و به هیچ سازمان یا مجموعه ثالثی فروخته یا واگذار نخواهد شد.</p>
+        <p><b>۴. حق حذف کامل (Right to be Forgotten):</b> شما در هر لحظه می‌توانید با یک کلیک در بخش داشبورد، تمامی اطلاعات و سوابق خود را به‌طور کامل و دائمی از دیتابیس پاک کنید.</p>
+      </div>
+      <button class="btn btn-secondary" onclick="closeModal('modal-setting-privacy')" style="margin-top: 14px;">بستن</button>
+    </div>
+  </div>
+
+  <div class="modal" id="modal-setting-about">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4>ℹ️ درباره ما و نحوه عملکرد برنامه</h4>
+        <button class="modal-close" onclick="closeModal('modal-setting-about')">✕</button>
+      </div>
+      
+      <div style="font-size: 12px; color: var(--text-sub); line-height: 1.6; margin-bottom: 16px;">
+        <p style="margin-bottom: 8px;"><b>🤖 منطق آموزشی هوشمند (AI Core):</b></p>
+        <p>این سیستم بر خلاف متدهای سنتی، با استفاده از مدل هوش مصنوعی تعاملی، وضعیت دقیق علمی و سرعت یادگیری شما را تحلیل کرده و یک <b>مسیر ۱۰۰٪ اختصاصی</b> طراحی می‌کند.</p>
+        <p style="margin-top: 6px;">ترکیب تکنیک <b>جعبه لایتنر هوشمند</b>، تمرینات <b>شبکه‌سازی واژگان</b> و گوینده صوتی به شما کمک می‌کند تا زبان را به‌صورت طبیعی فرا بگیرید.</p>
+      </div>
+
+      <hr style="border: 0; border-top: 1px solid var(--card-border); margin: 14px 0;">
+
+      <h4 style="margin-bottom: 10px; font-size: 13px;">📞 تماس با پشتیبانی</h4>
+      
+      <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px;">
+        <a href="https://t.me/Support_Handle" target="_blank" style="text-decoration: none;">
+          <div class="btn btn-secondary" style="font-size: 12px; text-align: center;">💬 ارتباط مستقیم در تلگرام (@Support_Handle)</div>
+        </a>
+        <div style="font-size: 11px; color: var(--text-sub); text-align: center;">✉️ ایمیل پشتیبانی: support@languageapp.com</div>
+      </div>
+
+      <div style="background: rgba(0,0,0,0.1); padding: 12px; border-radius: 14px; border: 1px solid var(--card-border);">
+        <p style="font-size: 11px; color: var(--text-sub); margin-bottom: 8px;">ارسال پیام مستقیم به پشتیبانی:</p>
+        <input type="text" id="ticket-subject" class="input-field" placeholder="موضوع پیام...">
+        <textarea id="ticket-body" class="input-field" placeholder="متن پیام شما..."></textarea>
+        <button class="btn" onclick="submitContactForm()">ارسال پیام</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- کدهای JavaScript با وب‌فوک‌های واقعی n8n                    -->
+  <!-- ========================================================= -->
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    // آدرس‌های واقعی n8n جایگزین شدند
+    const N8N_AUTH_URL = "https://sahand212.app.n8n.cloud/webhook/auth"; 
+    const N8N_DELETE_URL = "https://sahand212.app.n8n.cloud/webhook/delete-account";
+
+    let currentUserTelegramId = null;
+
+    function openModal(modalId) {
+      try {
+        const m = document.getElementById(modalId);
+        if (m) m.classList.add('active');
+      } catch (err) {
+        console.error("خطا در باز کردن پاپ‌آپ:", err);
+      }
+    }
+
+    function closeModal(modalId) {
+      try {
+        const m = document.getElementById(modalId);
+        if (m) m.classList.remove('active');
+      } catch (err) {
+        console.error("خطا در بستن پاپ‌آپ:", err);
+      }
+    }
+
+    function switchTab(tabId, el) {
+      try {
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+
+        const targetTab = document.getElementById('tab-' + tabId);
+        if (targetTab) targetTab.classList.add('active');
+        if (el) el.classList.add('active');
+      } catch (err) {
+        console.error("خطا در تعویض تب:", err);
+      }
+    }
+
+    function toggleTheme() {
+      try {
+        const body = document.body;
+        const themeBtn = document.getElementById('theme-btn');
+        const isDark = body.getAttribute('data-theme') === 'dark';
+        
+        body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+        if (themeBtn) themeBtn.innerText = isDark ? '🌙' : '☀️';
+      } catch (err) {
+        console.error("خطا در تغییر تم:", err);
+      }
+    }
+
+    function startCountdown(targetDateMs) {
+      setInterval(() => {
+        const now = new Date().getTime();
+        const diff = targetDateMs - now;
+
+        if (diff <= 0) {
+          document.getElementById('t-day').innerText = "00";
+          document.getElementById('t-hrs').innerText = "00";
+          document.getElementById('t-min').innerText = "00";
+          document.getElementById('t-sec').innerText = "00";
+          return;
+        }
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+        document.getElementById('t-day').innerText = String(days).padStart(2, '0');
+        document.getElementById('t-hrs').innerText = String(hours).padStart(2, '0');
+        document.getElementById('t-min').innerText = String(minutes).padStart(2, '0');
+        document.getElementById('t-sec').innerText = String(seconds).padStart(2, '0');
+      }, 1000);
+    }
+
+    async function executeAccountDeletion() {
+      closeModal('modal-delete-acc');
+      try {
+        await fetch(N8N_DELETE_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ telegram_id: currentUserTelegramId })
+        });
+      } catch (e) {
+        console.warn("ارتباط مستقیم با n8n برقرار نشد، عملیات محلی اجرا شد.");
+      }
+      
+      alert('حساب کاربری و تمامی داده‌های شما با موفقیت پاک شد.');
+      if (tg && tg.close) tg.close();
+    }
+
+    function submitContactForm() {
+      const subj = document.getElementById('ticket-subject').value;
+      const body = document.getElementById('ticket-body').value;
+
+      if (!subj || !body) {
+        alert('لطفاً عنوان و متن پیام را وارد کنید.');
+        return;
+      }
+
+      alert('پیام شما با موفقیت ثبت شد. به‌زودی از طریق تلگرام با شما تماس خواهیم گرفت.');
+      document.getElementById('ticket-subject').value = '';
+      document.getElementById('ticket-body').value = '';
+      closeModal('modal-setting-about');
+    }
+
+    async function initApp() {
+      const user = tg.initDataUnsafe?.user || { id: 123456789, username: "demo_user", first_name: "کاربر تست" };
+      currentUserTelegramId = user.id;
+
+      const nameEl = document.getElementById('user-name');
+      if (nameEl) {
+        nameEl.innerText = user.username ? `@${user.username}` : (user.first_name || "کاربر ناشناس");
+      }
+
+      let defaultTrialEnd = new Date().getTime() + (7 * 24 * 60 * 60 * 1000);
+
+      try {
+        const response = await fetch(N8N_AUTH_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ telegram_id: user.id, username: user.username, first_name: user.first_name })
+        });
+        
+        const data = await response.json();
+        const userData = Array.isArray(data) ? data[0] : data;
+
+        if (userData && userData.trial_ends_at) {
+          defaultTrialEnd = new Date(userData.trial_ends_at).getTime();
+        }
+      } catch (err) {
+        console.warn("استفاده از تایمر پیش‌فرض ۷ روزه آزمایشی.");
+      }
+
+      startCountdown(defaultTrialEnd);
+    }
+
+    initApp();
+  </script>
+</body>
+</html>

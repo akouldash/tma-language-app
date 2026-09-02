@@ -856,21 +856,46 @@
       }
 
       // -------------------------------------------------------------
-      // محاسبه زمان واقعی باقی‌مانده از روی داده‌های n8n / Supabase
+      // تابع کمکی برای تبدیل ایمن تاریخ دیتابیس به میلی‌ثانیه
       // -------------------------------------------------------------
-      let targetTimestamp = defaultTrialEnd;
-
-      // خواندن مستقیم ستون trial_ends_at که از n8n برمی‌گردد
-      if (userData && userData.trial_ends_at) {
-        targetTimestamp = new Date(userData.trial_ends_at).getTime();
-      } 
-      // یا اگر به هر دلیلی created_at محاسبه شود:
-      else if (userData && userData.created_at) {
-        const createdAtMs = new Date(userData.created_at).getTime();
-        targetTimestamp = createdAtMs + (7 * 24 * 60 * 60 * 1000); // افزودن ۷ روز به زمان ثبت‌نام
+      function parseServerDate(dateString) {
+        if (!dateString) return null;
+        // تبدیل فاصله به T برای استانداردسازی ISO 8601
+        const formattedStr = String(dateString).trim().replace(' ', 'T');
+        const timeMs = new Date(formattedStr).getTime();
+        return isNaN(timeMs) ? null : timeMs;
       }
 
-      // شروع معکوس‌شمار با زمان ثابت و واقعی
+      // -------------------------------------------------------------
+      // محاسبه زمان واقعی با اعتبارسنجی
+      // -------------------------------------------------------------
+      let targetTimestamp = null;
+
+      // دیباگ: مشاهده دیتای دریافتی در کنسول مرورگر
+      console.log("دیتا دریافتی از بک‌اند:", userData);
+
+      if (userData) {
+        // اگر userData خودش آرایه است (گاهی n8n لیست برمی‌گرداند)
+        const user = Array.isArray(userData) ? userData[0] : userData;
+
+        if (user && user.trial_ends_at) {
+          targetTimestamp = parseServerDate(user.trial_ends_at);
+          console.log("تاریخ انقضای خوانده شده از دیتابیس:", user.trial_ends_at, "-> timestamp:", targetTimestamp);
+        } else if (user && user.created_at) {
+          const createdMs = parseServerDate(user.created_at);
+          if (createdMs) {
+            targetTimestamp = createdMs + (7 * 24 * 60 * 60 * 1000);
+          }
+        }
+      }
+
+      // اگر به هر دلیلی تاریخ معتبری از دیتابیس گرفته نشد، از defaultTrialEnd استفاده می‌شود
+      if (!targetTimestamp) {
+        console.warn("تاریخ دیتابیس نامعتبر بود؛ استفاده از defaultTrialEnd به عنوان پشتیبان.");
+        targetTimestamp = defaultTrialEnd;
+      }
+
+      // اجرای معکوس‌شمار
       startCountdown(targetTimestamp);
     }
 

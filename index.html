@@ -482,10 +482,10 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // آدرس‌های وب‌فوک n8n
-    const N8N_AUTH_URL = "https://sahand212.app.n8n.cloud/webhook/auth"; 
-    const N8N_DELETE_URL = "https://sahand212.app.n8n.cloud/webhook/delete-account";
-    const N8N_PLACEMENT_URL = "https://sahand212.app.n8n.cloud/webhook/placement-test"; // وب‌فوک فاز ۳
+    // آدرس‌های وب‌فوک پروکسی‌شده از طریق Vercel (بدون نیاز به VPN)
+    const N8N_AUTH_URL = "/api/n8n/auth"; 
+    const N8N_DELETE_URL = "/api/n8n/delete-account";
+    const N8N_PLACEMENT_URL = "/api/n8n/placement-test";  // وب‌فوک فاز ۳
 
     let currentUserTelegramId = null;
 

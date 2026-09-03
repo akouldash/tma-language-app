@@ -1,91 +1,116 @@
 /* =========================================================
- * مدیریت جریان اصلی برنامه و احراز هویت (WF 1)
+ * نقطه ورود اصلی برنامه (App Initialization)
  * ========================================================= */
 
+// آدرس‌های API پروکسی‌شده بر اساس vercel.json و config.js
+const N8N_AUTH_URL = "/api/n8n/auth";
+const N8N_PLACEMENT_URL = "/api/n8n/placement-test";
+const N8N_LESSON_WEBHOOK_URL = "/api/n8n/generate-lesson";
+
+let currentUserTelegramId = null;
+
 async function initApp() {
-  console.log("[DEBUG] مقداردهی اولیه سیستم...");
+  console.log("[DEBUG] مقداردهی اولیه برنامه...");
 
-  // ۱. دریافت داده‌های کاربر از اپلیکیشن تلگرام
-  const tg = window.Telegram?.WebApp;
-  if (tg) tg.expand();
+  // ۱. دریافت ایمن مشخصات کاربر از تلگرام و نمایش در هدر اصلی
+  const tgUser = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) 
+                 ? window.Telegram.WebApp.initDataUnsafe.user 
+                 : {};
 
-  const tgUser = tg?.initDataUnsafe?.user || {};
-  currentUserTelegramId = tgUser.id ? String(tgUser.id) : "";
+  currentUserTelegramId = tgUser.id || "";
 
   const firstName = tgUser.first_name ? String(tgUser.first_name).trim() : "";
   const lastName = tgUser.last_name ? String(tgUser.last_name).trim() : "";
-  const fullName = (firstName + " " + lastName).trim() || "کاربر مهمان";
+  const fullName = (firstName + " " + lastName).trim() || "کاربر ناشناس";
   const cleanUsername = tgUser.username ? String(tgUser.username).replace(/^@/, '').trim() : "";
-  const subtext = cleanUsername && currentUserTelegramId ? `${cleanUsername} - ${currentUserTelegramId}` : (cleanUsername || currentUserTelegramId);
+  const userId = tgUser.id ? String(tgUser.id) : "";
 
+  let subtext = cleanUsername && userId ? `${cleanUsername} - ${userId}` : (cleanUsername || userId);
+
+  // نمایش پروفایل در ظاهر اولیه
   safeSetText('user-fullname', fullName);
   safeSetText('user-subtext', subtext);
 
-  // ۲. فراخوانی ورکفلوی ۱ (Auth & DB Sync)
+  let defaultTrialEnd = new Date().getTime() + (7 * 24 * 60 * 60 * 1000);
+  let userData = null;
+
+  // ۲. احراز هویت و دریافت اطلاعات کاربر از n8n (ورکفلو ۱)
   try {
+    const initDataStr = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp.initData : "";
+
     const response = await fetch(N8N_AUTH_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        telegram_id: tgUser.id,
-        username: tgUser.username,
-        first_name: tgUser.first_name,
+      body: JSON.stringify({ 
+        telegram_id: tgUser.id, 
+        username: tgUser.username, 
+        first_name: tgUser.first_name, 
         last_name: tgUser.last_name,
-        init_data: tg?.initData || ""
+        init_data: initDataStr 
       })
     });
 
     if (response.ok) {
       const data = await response.json();
-      currentUserData = Array.isArray(data) ? data[0] : data;
-      console.log("[DEBUG] داده‌های کاربر دریافت شد:", currentUserData);
+      userData = Array.isArray(data) ? data[0] : data;
+      console.log("[DEBUG] اطلاعات دریافتی کاربر:", userData);
     }
   } catch (err) {
-    console.warn("[DEBUG] خطا در احراز هویت اولیه:", err);
+    console.warn("[DEBUG] خطا در دریافت وضعیت کاربر از بک‌اند:", err);
   }
 
-  // ۳. مسیریابی هوشمند صفحه اولیه
-  const userLevel = currentUserData?.cefr_level;
+  // ۳. مدیریت کارت‌های آزمون و داشبورد با حفظ چیدمان قبلی
   const quizStartCard = document.getElementById('quiz-start-card');
   const quizResultsCard = document.getElementById('quiz-results-card');
 
-  if (currentUserData && userLevel && userLevel !== 'null') {
-    // کاربر تعیین سطح شده است -> به روزرسانی داشبورد
-    updateDashboardSummary(currentUserData);
-    
-    // اگر کاربر هنوز روی ورود به اولین درس کلیک نکرده، کارنامه را نشان بده؛ در غیر این صورت داشبورد
-    if (localStorage.getItem('first_lesson_started') === 'true') {
+  if (userData) {
+    // رندر داشبورد
+    if (typeof renderDashboard === 'function') {
+      renderDashboard(userData);
+    }
+
+    const rawLevel = userData.cefr_level || userData.determined_level || userData.level;
+    const hasValidLevel = rawLevel && rawLevel !== 'null' && rawLevel !== 'undefined' && rawLevel !== '';
+
+    if (hasValidLevel) {
+      // اگر تعیین سطح شده، کارت شروع مخفی می‌شود
       if (quizStartCard) quizStartCard.style.display = 'none';
-      if (quizResultsCard) quizResultsCard.style.display = 'none';
-      showScreen('dashboard-screen');
+
+      // اگر روی دکمه ورود به درس کلیک نکرده، کارنامه را نشان بده
+      if (localStorage.getItem('first_lesson_started') !== 'true') {
+        if (quizResultsCard) quizResultsCard.style.display = 'block';
+        if (typeof displayQuizResults === 'function') {
+          displayQuizResults({
+            determined_level: rawLevel,
+            summary: userData.ai_analysis_summary || "مسیر آموزشی شما فعال است."
+          });
+        }
+      } else {
+        if (quizResultsCard) quizResultsCard.style.display = 'none';
+      }
     } else {
-      if (quizStartCard) quizStartCard.style.display = 'none';
-      if (quizResultsCard) quizResultsCard.style.display = 'block';
-      displayQuizResults({
-        determined_level: userLevel,
-        summary: currentUserData.ai_analysis_summary || "مسیر آموزشی شما آماده است."
-      });
+      // کاربر تعیین سطح نشده یا دیتابیس پاک شده است
+      if (quizStartCard) quizStartCard.style.display = 'block';
+      if (quizResultsCard) quizResultsCard.style.display = 'none';
     }
   } else {
-    // کاربر جدید یا بدون تعیین سطح -> نمایش کارت شروع آزمون
     if (quizStartCard) quizStartCard.style.display = 'block';
     if (quizResultsCard) quizResultsCard.style.display = 'none';
-    showScreen('dashboard-screen');
   }
 
-  // ۴. راه‌اندازی تایمر اشتراک
-  setupSubscriptionTimer(currentUserData);
-}
+  // ۴. محاسبه و شروع تایمر اشتراک (پشتیبانی از فرمت‌های تاریخ سرور)
+  function parseServerDate(dateString) {
+    if (!dateString) return null;
+    const timeMs = new Date(String(dateString).trim().replace(' ', 'T')).getTime();
+    return isNaN(timeMs) ? null : timeMs;
+  }
 
-function setupSubscriptionTimer(userData) {
-  let defaultTrialEnd = new Date().getTime() + (7 * 24 * 60 * 60 * 1000);
   let targetTimestamp = null;
-
-  if (userData?.trial_ends_at) {
-    targetTimestamp = new Date(String(userData.trial_ends_at).trim().replace(' ', 'T')).getTime();
-  } else if (userData?.created_at) {
-    const createdMs = new Date(String(userData.created_at).trim().replace(' ', 'T')).getTime();
-    if (!isNaN(createdMs)) targetTimestamp = createdMs + (7 * 24 * 60 * 60 * 1000);
+  if (userData && userData.trial_ends_at) {
+    targetTimestamp = parseServerDate(userData.trial_ends_at);
+  } else if (userData && userData.created_at) {
+    const createdMs = parseServerDate(userData.created_at);
+    if (createdMs) targetTimestamp = createdMs + (7 * 24 * 60 * 60 * 1000);
   }
 
   if (typeof startCountdown === 'function') {
@@ -93,4 +118,72 @@ function setupSubscriptionTimer(userData) {
   }
 }
 
-document.addEventListener("DOMContentLoaded", initApp);
+/* =========================================================
+ * مدیریت ارسال تعیین سطح و انتقال کارنامه به داشبورد
+ * ========================================================= */
+
+async function submitPlacementTest(event) {
+  if (event) event.preventDefault();
+
+  const tgUser = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe) 
+                 ? window.Telegram.WebApp.initDataUnsafe.user || {} : {};
+
+  const answers = {
+    q1: document.getElementById('quiz-q1')?.value || '',
+    q2: document.getElementById('quiz-q2')?.value || '',
+    q3: document.getElementById('quiz-q3')?.value || '',
+    q4: document.getElementById('quiz-q4')?.value || '',
+    q5: document.getElementById('quiz-q5')?.value || ''
+  };
+
+  const payload = {
+    telegram_id: tgUser.id || currentUserTelegramId,
+    first_name: tgUser.first_name || "",
+    username: tgUser.username || "",
+    answers: answers
+  };
+
+  try {
+    const response = await fetch(N8N_PLACEMENT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) throw new Error(`خطا: ${response.status}`);
+
+    const result = await response.json();
+
+    document.getElementById('quiz-start-card').style.display = 'none';
+    const quizResultsCard = document.getElementById('quiz-results-card');
+    if (quizResultsCard) quizResultsCard.style.display = 'block';
+
+    if (typeof displayQuizResults === 'function') {
+      displayQuizResults(result);
+    }
+  } catch (error) {
+    console.error("[DEBUG] خطا در ارسال پاسخ‌های آزمون:", error);
+    alert("خطا در ارتباط با سرور. لطفاً مجدداً سعی کنید.");
+  }
+}
+
+// دکمه «ورود به اولین جلسه درس» (حذف کارنامه و انتقال خلاصه وضعیت به داشبورد)
+function startFirstLesson() {
+  localStorage.setItem('first_lesson_started', 'true');
+
+  const quizResultsCard = document.getElementById('quiz-results-card');
+  if (quizResultsCard) quizResultsCard.style.display = 'none';
+
+  // اگر تابعی برای باز کردن بخش درس یا دریافت WF 3 دارید در اینجا فراخوانی می‌شود
+  if (typeof loadLessonData === 'function') {
+    loadLessonData();
+  }
+}
+
+// اجرای برنامه
+document.addEventListener("DOMContentLoaded", () => {
+  if (window.Telegram && window.Telegram.WebApp) {
+    window.Telegram.WebApp.expand();
+  }
+  initApp();
+});

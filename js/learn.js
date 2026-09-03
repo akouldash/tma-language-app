@@ -1,186 +1,147 @@
-/**
- * js/learn.js
- * مدیریت دریافت درس از n8n و رندر پویای کارت‌های آموزشی، لغات و تمرینات
- */
+/* =========================================================
+ * فاز ۴: موتور ارائه دروس (WF 3)، درخت واژگان، تمرین جاگذاری و موتور صوتی
+ * ========================================================= */
 
-// آدرس وب‌هوک n8n (آدرس سرور n8n خود را جایگزین کنید)
-const N8N_LESSON_WEBHOOK_URL = 'https://n8n.your-domain.com/webhook/generate-lesson';
+// لیست گویندگان ۱۰ شخصیت صوتی برای پخش TTS
+const VOICE_PROFILES = [
+  { id: "v1", name: "Alexander (US Male)", lang: "en-US", pitch: 1.0, rate: 0.9 },
+  { id: "v2", name: "Sarah (US Female)", lang: "en-US", pitch: 1.1, rate: 0.95 },
+  { id: "v3", name: "British James (UK Male)", lang: "en-GB", pitch: 0.95, rate: 0.85 },
+  { id: "v4", name: "Emma (UK Female)", lang: "en-GB", pitch: 1.05, rate: 0.9 },
+  { id: "v5", name: "Australian Liam", lang: "en-AU", pitch: 1.0, rate: 1.0 },
+  { id: "v6", name: "Teacher Olivia", lang: "en-US", pitch: 1.2, rate: 0.8 },
+  { id: "v7", name: "News Anchor David", lang: "en-US", pitch: 0.85, rate: 0.95 },
+  { id: "v8", name: "Casual Male Mark", lang: "en-US", pitch: 0.9, rate: 1.05 },
+  { id: "v9", name: "Storyteller Sophia", lang: "en-GB", pitch: 1.1, rate: 0.85 },
+  { id: "v10", name: "Academic Prof. Ethan", lang: "en-US", pitch: 0.8, rate: 0.85 }
+];
 
-/**
- * دریافت درس از بک‌اند n8n و نمایش لودینگ
- */
-async function loadCurrentLesson() {
-  const learnContainer = document.getElementById('tab-learn');
-  if (!learnContainer) return;
+let selectedVoice = VOICE_PROFILES[0];
 
-  // ۱. نمایش وضعیت در حال بارگذاری (Loading State)
-  learnContainer.innerHTML = `
-    <div class="card" style="text-align: center; padding: 40px 20px;">
-      <div class="spinner" style="border: 4px solid rgba(255,255,255,0.1); border-left-color: var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 16px;"></div>
-      <h4 style="margin-bottom: 8px;">در حال تولید درس اختصاصی شما...</h4>
-      <p style="font-size: 0.85rem; color: var(--text-sub);">هوش مصنوعی در حال تنظیم محتوا بر اساس سطح شماست.</p>
-    </div>
-  `;
+// فراخوانی بسته درسی از ورکفلوی ۳ (WF 3)
+async function loadAndRenderLesson(telegramId, level) {
+  safeSetHTML('lesson-container', '<div class="loading-spinner">در حال تولید بسته درسی توسط هوش مصنوعی Gemini...</div>');
 
   try {
-    // دریافت شناسه تلگرام کاربر از WebApp
-    const telegramId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || "guest";
-
     const response = await fetch(N8N_LESSON_WEBHOOK_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ telegram_id: String(telegramId) })
+      body: JSON.stringify({
+        telegram_id: telegramId,
+        level: level
+      })
     });
 
-    if (!response.ok) throw new Error("خطا در دریافت اطلاعات از سرور");
+    if (!response.ok) throw new Error(`خطا در دریافت درس: ${response.status}`);
 
-    const lessonData = await response.json();
-
-    // ۲. رندر محتوای درس پس از دریافت کامل داده
-    renderLessonView(lessonData);
+    currentLessonData = await response.json();
+    renderLessonUI(currentLessonData);
 
   } catch (error) {
-    learnContainer.innerHTML = `
-      <div class="card" style="text-align: center; border-color: rgba(239, 68, 68, 0.4);">
-        <p style="color: #ef4444; font-weight: bold;">❌ دریافت درس با خطا مواجه شد.</p>
-        <button class="btn btn-primary" style="margin-top: 12px;" onclick="loadCurrentLesson()">تلاش مجدد</button>
-      </div>
-    `;
+    console.error("[DEBUG] خطا در فراخوانی WF 3:", error);
+    safeSetHTML('lesson-container', '<div class="error-card">خطا در بارگذاری جلسه درسی. لطفاً مجدداً تلاش کنید.</div>');
   }
 }
 
-/**
- * رندر کامل ساختار درس در زبانه آموزش
- */
-function renderLessonView(data) {
-  const container = document.getElementById('tab-learn');
-  if (!container || !data) return;
+// رندر UI اختصاصی درس بر اساس درخت شبکه واژگان و Substitution Drill
+function renderLessonUI(lesson) {
+  const container = document.getElementById('lesson-container');
+  if (!container) return;
 
-  // ساخت هدر درس و بخش لغات
-  let html = `
-    <!-- هدر درس -->
-    <div class="card">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-        <span class="user-level-badge">${data.level}</span>
-        <span style="font-size: 0.8rem; color: var(--text-sub);">ID: ${data.lesson_id}</span>
+  const vocab = lesson.vocabulary || {};
+  const structure = lesson.structure || {};
+
+  container.innerHTML = `
+    <!-- بخش انتخاب گوینده صوتی (TTS) -->
+    <div class="voice-selector-card">
+      <label>🔊 انتخاب گوینده تمرین صوتی:</label>
+      <select id="voice-select" onchange="changeVoiceProfile(this.value)">
+        ${VOICE_PROFILES.map(v => `<option value="${v.id}">${v.name}</option>`).join('')}
+      </select>
+    </div>
+
+    <!-- بخش ۱: درخت شبکه واژگان (Vocabulary Network Tree) -->
+    <div class="vocab-network-card">
+      <div class="vocab-header">
+        <h3>🌱 شبکه واژگان: <span class="highlight">${vocab.word || ''}</span></h3>
+        <button class="tts-btn" onclick="playTTS('${vocab.word || ''}')">🔊 پخش تلفظ [${vocab.pronunciation || ''}]</button>
       </div>
-      <h2 style="font-size: 1.3rem; margin-bottom: 6px;">${data.title}</h2>
-      <p style="font-size: 0.88rem; color: var(--text-sub);">${data.summary}</p>
-    </div>
-
-    <!-- بخش ۱: واژگان جدید (Vocabulary) -->
-    <div class="card">
-      <h3 style="font-size: 1rem; margin-bottom: 12px; color: var(--accent);">📚 لغات کلیدی این درس</h3>
-      <div id="vocab-list">
-        ${renderVocabularyCards(data.vocabulary || [])}
-      </div>
-    </div>
-
-    <!-- بخش ۲: مهارت‌های ۴گانه -->
-    <div class="card">
-      <h3 style="font-size: 1rem; margin-bottom: 12px; color: var(--accent);">🎯 تمرین مهارت‌ها</h3>
-      ${renderSkillsSection(data.skills_content || {})}
-    </div>
-
-    <!-- بخش ۳: آزمون و تمرین تعاملی -->
-    <div class="card">
-      <h3 style="font-size: 1rem; margin-bottom: 12px; color: var(--accent);">📝 خودآزمایی و تثبیت</h3>
-      ${renderExercises(data.interactive_exercises || [])}
-    </div>
-  `;
-
-  container.innerHTML = html;
-}
-
-/**
- * تولید کارت‌های لغت همراه با دکمه پخش صوت
- */
-function renderVocabularyCards(vocabList) {
-  if (!vocabList.length) return '<p>لغتی برای این درس ثبت نشده است.</p>';
-
-  return vocabList.map(item => `
-    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px; margin-bottom: 10px;">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <strong style="font-size: 1.1rem; color: #38bdf8;">${item.word}</strong>
-        <button type="button" class="btn-audio" onclick="speakText('${item.word}')">🔊 شنیدن</button>
-      </div>
-      <div style="font-size: 0.8rem; color: var(--text-sub); margin: 2px 0 6px;">${item.phonetic || ''}</div>
-      <div style="font-size: 0.9rem; font-weight: 600; margin-bottom: 8px;">${item.meaning_fa}</div>
+      <p class="meaning"><strong>معنی:</strong> ${vocab.meaning || ''}</p>
       
-      <div style="font-size: 0.82rem; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span>${item.example_en}</span>
-          <button class="btn-audio" style="padding: 2px 6px; font-size: 0.7rem;" onclick="speakText('${item.example_en.replace(/'/g, "\\'")}')">🔊</button>
+      <div class="network-tree-grid">
+        <div class="tree-node synonyms">
+          <h4>🔗 مترادف‌ها (Synonyms)</h4>
+          <ul>${(vocab.synonyms || []).map(s => `<li>${s}</li>`).join('')}</ul>
         </div>
-        <div style="color: var(--text-sub); margin-top: 4px; font-size: 0.78rem;">${item.example_fa}</div>
+        <div class="tree-node antonyms">
+          <h4>⚡ متضادها (Antonyms)</h4>
+          <ul>${(vocab.antonyms || []).map(a => `<li>${a}</li>`).join('')}</ul>
+        </div>
+        <div class="tree-node collocations">
+          <h4>🎯 ترکیب‌های پرکاربرد (Collocations)</h4>
+          <ul>${(vocab.collocations || []).map(c => `<li>${c}</li>`).join('')}</ul>
+        </div>
+        <div class="tree-node family">
+          <h4>🌿 هم‌خانواده‌ها (Word Family)</h4>
+          <ul>${(vocab.word_family || []).map(f => `<li>${f}</li>`).join('')}</ul>
+        </div>
       </div>
     </div>
-  `).join('');
-}
 
-/**
- * رندر بخش مهارت‌های ۴گانه
- */
-function renderSkillsSection(skills) {
-  const listening = skills.listening || {};
-  const reading = skills.reading || {};
-
-  return `
-    <!-- مهارت شنیداری -->
-    ${listening.title ? `
-      <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-          <strong style="font-size: 0.9rem;">🎧 شنیداری: ${listening.title}</strong>
-          <button type="button" class="btn-audio" onclick="speakText('${listening.script?.replace(/'/g, "\\'")}')">🔊 پخش متن</button>
+    <!-- بخش ۲: تمرین تعاملی جاگذاری (Substitution Drill) -->
+    <div class="drill-card">
+      <h3>🔄 تمرین الگوهای ساختاری (Substitution Drill)</h3>
+      <p class="pattern-expl">${structure.explanation || ''}</p>
+      
+      <div class="drill-box">
+        <p class="base-sentence" id="drill-target-sentence">${structure.base_pattern || ''}</p>
+        <div class="substitution-options">
+          <p>کلمه جایگزین را انتخاب کنید:</p>
+          <div class="tags-group">
+            ${(structure.substitution_tokens || []).map(token => `
+              <button class="token-btn" onclick="applySubstitution('${structure.base_pattern}', '${token}')">${token}</button>
+            `).join('')}
+          </div>
         </div>
-        <p style="font-size: 0.85rem; color: var(--text-sub);">${listening.script || ''}</p>
       </div>
-    ` : ''}
+    </div>
 
-    <!-- مهارت خوانش -->
-    ${reading.title ? `
-      <div>
-        <strong style="font-size: 0.9rem; display: block; margin-bottom: 6px;">📖 خوانش: ${reading.title}</strong>
-        <p style="font-size: 0.85rem; color: var(--text-sub); line-height: 1.6;">${reading.passage || ''}</p>
-      </div>
-    ` : ''}
+    <button class="primary-btn complete-lesson-btn" onclick="finishLessonAndAddToLeitner()">تکمیل درس و انتقال واژگان به لایتنر ➔</button>
   `;
 }
 
-/**
- * رندر سوالات و تمرینات تعاملی
- */
-function renderExercises(exercises) {
-  if (!exercises.length) return '<p>تمرینی برای این درس وجود ندارد.</p>';
+// موتور صوتی TTS بر پایه Web Speech API
+function playTTS(text) {
+  if (!('speechSynthesis' in window)) {
+    alert("مرورگر شما از قابلیت خوانش صوتی پشتیبانی نمی‌کند.");
+    return;
+  }
 
-  return exercises.map((ex, idx) => `
-    <div style="margin-bottom: 16px;" id="ex-box-${idx}">
-      <p style="font-size: 0.9rem; font-weight: 600; margin-bottom: 10px;">${idx + 1}. ${ex.question}</p>
-      <div style="display: flex; flex-direction: column; gap: 8px;">
-        ${(ex.options || []).map(opt => `
-          <button type="button" class="btn" style="background: rgba(255,255,255,0.05); text-align: right; justify-content: flex-start;" onclick="checkAnswer(${idx}, '${opt}', '${ex.correct_answer}', '${ex.explanation?.replace(/'/g, "\\'")}')">
-            ${opt}
-          </button>
-        `).join('')}
-      </div>
-      <div id="ex-feedback-${idx}" style="margin-top: 8px; font-size: 0.85rem; display: none;"></div>
-    </div>
-  `).join('');
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = selectedVoice.lang;
+  utterance.pitch = selectedVoice.pitch;
+  utterance.rate = selectedVoice.rate;
+
+  window.speechSynthesis.speak(utterance);
 }
 
-/**
- * بررسی پاسخ انتخاب‌شده کاربر در تمرینات
- */
-function checkAnswer(index, selected, correct, explanation) {
-  const feedbackEl = document.getElementById(`ex-feedback-${index}`);
-  if (!feedbackEl) return;
+function changeVoiceProfile(voiceId) {
+  selectedVoice = VOICE_PROFILES.find(v => v.id === voiceId) || VOICE_PROFILES[0];
+}
 
-  feedbackEl.style.display = 'block';
-  if (selected === correct) {
-    feedbackEl.style.color = '#10b981';
-    feedbackEl.innerHTML = `✅ **پاسخ درست است!** ${explanation}`;
-  } else {
-    feedbackEl.style.color = '#ef4444';
-    feedbackEl.innerHTML = `❌ **نادرست.** پاسخ صحیح: **${correct}**<br><span style="color: var(--text-sub);">${explanation}</span>`;
+// اجرای متد تمرینی Substitution Drill
+function applySubstitution(basePattern, token) {
+  const updatedSentence = basePattern.replace(/\[.*?\]/, token);
+  const targetEl = document.getElementById('drill-target-sentence');
+  if (targetEl) {
+    targetEl.innerHTML = `<span class="updated-text">${updatedSentence}</span>`;
+    playTTS(updatedSentence);
   }
+}
+
+// انتقال درس به مرحله لایتنر (آماده‌سازی برای فاز ۵)
+function finishLessonAndAddToLeitner() {
+  alert("واژگان درس جاری با موفقیت به خانه اول جعبه لایتنر شما منتقل شدند.");
+  showScreen('dashboard-screen');
 }

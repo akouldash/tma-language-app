@@ -32,9 +32,10 @@
 /* =========================================================
  * ۲. استایل‌های پایه و بدنه
  * ========================================================= */
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; transition: all 0.2s ease; }
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease; }
 body { background: var(--bg-main); color: var(--text-main); padding-bottom: 110px; user-select: none; }
 .container { padding: 16px; max-width: 480px; margin: 0 auto; }
+.hidden { display: none !important; }
 
 /* هدر و کارت‌ها */
 .top-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 4px; margin-bottom: 12px; }
@@ -61,7 +62,7 @@ body { background: var(--bg-main); color: var(--text-main); padding-bottom: 110p
 @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
 /* =========================================================
- * ۳. استایل‌های اختصاصی داشبورد آموزشی (جدید)
+ * ۳. استایل‌های اختصاصی داشبورد آموزشی
  * ========================================================= */
 .dash-card-summary { background: rgba(99, 102, 241, 0.12); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 18px; padding: 16px; text-align: center; margin-bottom: 14px; }
 .dash-card-summary p { margin: 0; color: var(--text-main); font-size: 0.9rem; line-height: 1.5; }
@@ -80,8 +81,29 @@ body { background: var(--bg-main); color: var(--text-main); padding-bottom: 110p
 .dash-study-timer-card { background: rgba(0, 0, 0, 0.15); border-radius: 18px; padding: 14px; text-align: center; margin-bottom: 14px; border: 1px solid var(--card-border); }
 .dash-study-timer-card h4 { margin-bottom: 10px; color: var(--text-main); font-size: 0.85rem; }
 
-.dash-card-quote { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(10, 185, 129, 0.25); border-radius: 18px; padding: 14px; text-align: center; margin-bottom: 14px; }
+.dash-card-quote { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 18px; padding: 14px; text-align: center; margin-bottom: 14px; }
 .dash-card-quote p { margin: 0; color: var(--success); font-size: 0.85rem; font-weight: 500; }
+
+/* ساختار جدید کارت داشبورد (فاز ۴) - کاملاً هماهنگ با متغیرهای تم */
+.dashboard-card-wrapper { display: flex; flex-direction: column; gap: 14px; margin-bottom: 14px; }
+.active-lesson-card { background: var(--card-bg); backdrop-filter: blur(12px); border: 1px solid var(--card-border); border-radius: 20px; padding: 18px; color: var(--text-main); box-shadow: var(--shadow); }
+.lesson-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.badge-level { background: var(--success); color: #ffffff; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 20px; }
+.lesson-topic { font-weight: 700; font-size: 1rem; color: var(--text-main); }
+.lesson-desc { font-size: 0.85rem; color: var(--text-sub); margin-bottom: 16px; line-height: 1.5; }
+.progress-section { margin-bottom: 16px; }
+.progress-info { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-sub); margin-bottom: 6px; }
+.progress-bar-bg { width: 100%; height: 8px; background: rgba(0, 0, 0, 0.15); border-radius: 10px; overflow: hidden; }
+.progress-bar-fill { height: 100%; background: var(--primary-gradient); border-radius: 10px; transition: width 0.4s ease; }
+.btn-primary-action { width: 100%; background: var(--primary-gradient); color: #ffffff; border: none; padding: 12px 16px; border-radius: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; box-shadow: var(--shadow); }
+.btn-primary-action:active { opacity: 0.9; transform: scale(0.99); }
+
+.skills-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.skill-item { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 6px; backdrop-filter: blur(12px); }
+.skill-icon { font-size: 1.2rem; }
+.skill-title { font-size: 0.85rem; font-weight: 600; color: var(--text-main); }
+.skill-level-bar { height: 6px; width: 100%; background: rgba(0, 0, 0, 0.15); border-radius: 4px; position: relative; overflow: hidden; }
+.skill-level-bar::after { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: var(--skill-val, 0%); background: var(--accent); border-radius: 4px; transition: width 0.4s ease; }
 
 /* =========================================================
  * ۴. استایل‌های آزمون تعیین سطح و مدال‌ها

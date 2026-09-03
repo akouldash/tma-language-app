@@ -2,21 +2,13 @@
  * نقطه ورود اصلی برنامه (App Initialization)
  * ========================================================= */
 
-// تابع کمکی پاک‌سازی حافظه محلی در صورت پاک‌سازی دیتابیس یا عدم وجود سطح کاربر
-function clearLocalCache() {
-  try {
-    localStorage.clear();
-    sessionStorage.clear();
-    console.log("[DEBUG] حافظه محلی مرورگر پاک‌سازی شد.");
-  } catch (e) {
-    console.warn("[DEBUG] خطا در پاک‌سازی حافظه محلی:", e);
-  }
-}
+// آدرس وب‌هوک احراز هویت از طریق پروکسی Vercel
+const N8N_AUTH_URL = '/api/n8n/auth';
 
 async function initApp() {
   console.log("[DEBUG] مقداردهی اولیه برنامه...");
 
-  // ۱. دریافت ایمن مشخصات کاربر از تلگرام
+  // ۱. دریافت ایمن مشخصات کاربر از تلگرام و نمایش در پروفایل
   const tgUser = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) 
                  ? window.Telegram.WebApp.initDataUnsafe.user 
                  : {};
@@ -31,13 +23,16 @@ async function initApp() {
 
   let subtext = cleanUsername && userId ? `${cleanUsername} - ${userId}` : (cleanUsername || userId);
 
-  safeSetText('user-fullname', fullName);
-  safeSetText('user-subtext', subtext);
+  // نمایش فوری نام و شناسه کاربر در صفحه
+  if (typeof safeSetText === 'function') {
+    safeSetText('user-fullname', fullName);
+    safeSetText('user-subtext', subtext);
+  }
 
   let defaultTrialEnd = new Date().getTime() + (7 * 24 * 60 * 60 * 1000);
   let userData = null;
 
-  // ۲. احراز هویت و دریافت اطلاعات کاربر از n8n
+  // ۲. احراز هویت و دریافت اطلاعات کاربر از n8n پروکسی
   try {
     const initDataStr = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp.initData : "";
 
@@ -57,43 +52,47 @@ async function initApp() {
       const data = await response.json();
       userData = Array.isArray(data) ? data[0] : data;
       console.log("[DEBUG] اطلاعات دریافتی کاربر:", userData);
-    } else {
-      console.warn("[DEBUG] پاسخ ناموفق از سرور بک‌اند:", response.status);
     }
+  } catch (err) {
+    console.warn("[DEBUG] خطا در دریافت وضعیت کاربر از بک‌اند:", err);
+  }
 
-   // ۳. بررسی دقیق سطح کاربر (عدم پذیرش کاربران بدون تعیین سطح واقعی)
-    const rawLevel = userData ? (userData.cefr_level || userData.determined_level || userData.level) : null;
-    
-    // اگر سطح کاربر وجود داشت و مخالف مقادیر خالی یا اولیه بود
-    const hasValidLevel = rawLevel && rawLevel !== 'null' && rawLevel !== 'undefined' && rawLevel !== '';
+  // ۳. رندر داشبورد و مدیریت نمایش فرم تعیین سطح
+  const quizStartCard = document.getElementById('quiz-start-card');
+  const quizResultsCard = document.getElementById('quiz-results-card');
 
-    if (userData && hasValidLevel) {
-      console.log("[DEBUG] کاربر دارای سطح معتبر است:", rawLevel);
-      renderDashboard(userData);
-
-      const quizStartCard = document.getElementById('quiz-start-card');
-      if (quizStartCard) quizStartCard.style.display = 'none';
-
-      displayQuizResults({
-        determined_level: rawLevel,
-        summary: userData.ai_analysis_summary || "مسیر آموزشی فعال است."
-      });
-    } else {
-      // کاربر جدید است یا دیتابیس پاک شده -> نمایش حتمی کارت شروع تعیین سطح
-      console.log("[DEBUG] کاربر تعیین سطح نشده است. باز کردن فرم تعیین سطح...");
-      clearLocalCache();
-
-      const quizStartCard = document.getElementById('quiz-start-card');
-      if (quizStartCard) quizStartCard.style.display = 'block';
-
-      const quizResultsCard = document.getElementById('quiz-results-card');
-      if (quizResultsCard) quizResultsCard.style.display = 'none';
-
-      if (typeof renderDashboard === 'function') {
-        renderDashboard(userData || {});
+  if (userData) {
+    // رندر ایمن داده‌های داشبورد
+    if (typeof renderDashboard === 'function') {
+      try {
+        renderDashboard(userData);
+      } catch (e) {
+        console.error("[DEBUG] خطا در رندر داشبورد:", e);
       }
     }
-  // ۴. محاسبه و شروع تایمر اشتراک
+
+    const rawLevel = userData.cefr_level || userData.determined_level || userData.level;
+    const hasValidLevel = rawLevel && rawLevel !== 'null' && rawLevel !== 'undefined' && rawLevel !== '';
+
+    if (hasValidLevel) {
+      if (quizStartCard) quizStartCard.style.display = 'none';
+      if (typeof displayQuizResults === 'function') {
+        displayQuizResults({
+          determined_level: rawLevel,
+          summary: userData.ai_analysis_summary || "مسیر آموزشی فعال است."
+        });
+      }
+    } else {
+      if (quizStartCard) quizStartCard.style.display = 'block';
+      if (quizResultsCard) quizResultsCard.style.display = 'none';
+    }
+  } else {
+    // عدم وجود داده کاربر (دیتابیس پاک شده یا کاربر جدید)
+    if (quizStartCard) quizStartCard.style.display = 'block';
+    if (quizResultsCard) quizResultsCard.style.display = 'none';
+  }
+
+  // ۴. محاسبه و شروع بدون خطای تایمر اشتراک
   function parseServerDate(dateString) {
     if (!dateString) return null;
     const timeMs = new Date(String(dateString).trim().replace(' ', 'T')).getTime();
@@ -108,7 +107,9 @@ async function initApp() {
     if (createdMs) targetTimestamp = createdMs + (7 * 24 * 60 * 60 * 1000);
   }
 
-  startCountdown(targetTimestamp || defaultTrialEnd);
+  if (typeof startCountdown === 'function') {
+    startCountdown(targetTimestamp || defaultTrialEnd);
+  }
 }
 
 // اجرای برنامه به محض بارگذاری کامل DOM

@@ -61,23 +61,26 @@ async function initApp() {
       console.warn("[DEBUG] پاسخ ناموفق از سرور بک‌اند:", response.status);
     }
 
-    // ۳. بررسی سطح کاربر و هدایت به تعیین سطح یا داشبورد
-    const userLevel = userData ? (userData.cefr_level || userData.determined_level || userData.level) : null;
+   // ۳. بررسی دقیق سطح کاربر (عدم پذیرش کاربران بدون تعیین سطح واقعی)
+    const rawLevel = userData ? (userData.cefr_level || userData.determined_level || userData.level) : null;
+    
+    // اگر سطح کاربر وجود داشت و مخالف مقادیر خالی یا اولیه بود
+    const hasValidLevel = rawLevel && rawLevel !== 'null' && rawLevel !== 'undefined' && rawLevel !== '';
 
-    if (userData && userLevel) {
-      // حالت اول: کاربر قبلاً تعیین سطح شده و سطح معتبر دارد
+    if (userData && hasValidLevel) {
+      console.log("[DEBUG] کاربر دارای سطح معتبر است:", rawLevel);
       renderDashboard(userData);
 
       const quizStartCard = document.getElementById('quiz-start-card');
       if (quizStartCard) quizStartCard.style.display = 'none';
 
       displayQuizResults({
-        determined_level: userLevel,
+        determined_level: rawLevel,
         summary: userData.ai_analysis_summary || "مسیر آموزشی فعال است."
       });
     } else {
-      // حالت دوم: دیتابیس پاک شده یا کاربر جدید است -> نمایش کارت شروع تعیین سطح
-      console.log("[DEBUG] سطح کاربر یافت نشد یا دیتابیس پاک شده است. هدایت به تعیین سطح...");
+      // کاربر جدید است یا دیتابیس پاک شده -> نمایش حتمی کارت شروع تعیین سطح
+      console.log("[DEBUG] کاربر تعیین سطح نشده است. باز کردن فرم تعیین سطح...");
       clearLocalCache();
 
       const quizStartCard = document.getElementById('quiz-start-card');
@@ -90,15 +93,6 @@ async function initApp() {
         renderDashboard(userData || {});
       }
     }
-  } catch (err) {
-    console.warn("[DEBUG] خطا در دریافت وضعیت کاربر از بک‌اند:", err);
-    
-    // در صورت قطعی یا خطا نیز فرم تعیین سطح مجدداً در دسترس قرار گیرد
-    clearLocalCache();
-    const quizStartCard = document.getElementById('quiz-start-card');
-    if (quizStartCard) quizStartCard.style.display = 'block';
-  }
-
   // ۴. محاسبه و شروع تایمر اشتراک
   function parseServerDate(dateString) {
     if (!dateString) return null;

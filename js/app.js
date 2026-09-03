@@ -2,6 +2,17 @@
  * نقطه ورود اصلی برنامه (App Initialization)
  * ========================================================= */
 
+// تابع کمکی پاک‌سازی حافظه محلی در صورت پاک‌سازی دیتابیس یا عدم وجود سطح کاربر
+function clearLocalCache() {
+  try {
+    localStorage.clear();
+    sessionStorage.clear();
+    console.log("[DEBUG] حافظه محلی مرورگر پاک‌سازی شد.");
+  } catch (e) {
+    console.warn("[DEBUG] خطا در پاک‌سازی حافظه محلی:", e);
+  }
+}
+
 async function initApp() {
   console.log("[DEBUG] مقداردهی اولیه برنامه...");
 
@@ -42,25 +53,50 @@ async function initApp() {
       })
     });
 
-    const data = await response.json();
-    userData = Array.isArray(data) ? data[0] : data;
-    console.log("[DEBUG] اطلاعات دریافتی کاربر:", userData);
+    if (response.ok) {
+      const data = await response.json();
+      userData = Array.isArray(data) ? data[0] : data;
+      console.log("[DEBUG] اطلاعات دریافتی کاربر:", userData);
+    } else {
+      console.warn("[DEBUG] پاسخ ناموفق از سرور بک‌اند:", response.status);
+    }
 
-    // ۳. رندر داشبورد اصلی
-    if (userData) {
+    // ۳. بررسی سطح کاربر و هدایت به تعیین سطح یا داشبورد
+    const userLevel = userData ? (userData.cefr_level || userData.determined_level || userData.level) : null;
+
+    if (userData && userLevel) {
+      // حالت اول: کاربر قبلاً تعیین سطح شده و سطح معتبر دارد
       renderDashboard(userData);
 
-      const userLevel = userData.cefr_level || userData.determined_level || userData.level;
-      if (userLevel) {
-        document.getElementById('quiz-start-card').style.display = 'none';
-        displayQuizResults({
-          determined_level: userLevel,
-          summary: userData.ai_analysis_summary || "مسیر آموزشی فعال است."
-        });
+      const quizStartCard = document.getElementById('quiz-start-card');
+      if (quizStartCard) quizStartCard.style.display = 'none';
+
+      displayQuizResults({
+        determined_level: userLevel,
+        summary: userData.ai_analysis_summary || "مسیر آموزشی فعال است."
+      });
+    } else {
+      // حالت دوم: دیتابیس پاک شده یا کاربر جدید است -> نمایش کارت شروع تعیین سطح
+      console.log("[DEBUG] سطح کاربر یافت نشد یا دیتابیس پاک شده است. هدایت به تعیین سطح...");
+      clearLocalCache();
+
+      const quizStartCard = document.getElementById('quiz-start-card');
+      if (quizStartCard) quizStartCard.style.display = 'block';
+
+      const quizResultsCard = document.getElementById('quiz-results-card');
+      if (quizResultsCard) quizResultsCard.style.display = 'none';
+
+      if (typeof renderDashboard === 'function') {
+        renderDashboard(userData || {});
       }
     }
   } catch (err) {
     console.warn("[DEBUG] خطا در دریافت وضعیت کاربر از بک‌اند:", err);
+    
+    // در صورت قطعی یا خطا نیز فرم تعیین سطح مجدداً در دسترس قرار گیرد
+    clearLocalCache();
+    const quizStartCard = document.getElementById('quiz-start-card');
+    if (quizStartCard) quizStartCard.style.display = 'block';
   }
 
   // ۴. محاسبه و شروع تایمر اشتراک

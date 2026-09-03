@@ -2,356 +2,120 @@
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Language Learning MiniApp</title>
- 
-  <!-- کنسول عیب‌یابی مینی‌آپ -->
-  <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-  <script>eruda.init();</script>
-
-  <!-- اسکریپت رسمی تلگرام -->
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-  <!-- فایل استایل مجزا -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>N8N AI Language Education</title>
   <link rel="stylesheet" href="css/style.css">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
-<body data-theme="dark">
+<body>
 
-  <div class="container">
-    <!-- هدر بالای برنامه -->
-    <header class="top-header">
-      <div style="font-size: 18px; font-weight: bold;">💎 Language Core</div>
-      <button type="button" class="theme-toggle-btn" id="theme-btn" onclick="toggleTheme()" title="تغییر تم">☀️</button>
+  <div id="app">
+    <!-- هدر عمومی و پروفایل کاربر -->
+    <header class="app-header">
+      <div class="user-profile">
+        <h2 id="user-fullname">در حال بارگذاری...</h2>
+        <span id="user-subtext">...</span>
+      </div>
+      <div class="timer-badge" id="subscription-timer">
+        ⏳ اعتبار: <span id="countdown-text">--:--:--</span>
+      </div>
     </header>
 
-<!-- ========================================================= -->
-<!-- صفحه ۱: داشبورد و پروفایل کاربر (حالت اولیه: صفر)         -->
-<!-- ========================================================= -->
-<main id="tab-dashboard" class="tab-content active">
-  
-  <!-- کارت مشخصات کاربر -->
-  <div class="card" style="display: flex; align-items: center; gap: 14px;">
-    <div style="width: 52px; height: 52px; border-radius: 50%; background: var(--primary-gradient); display: flex; align-items: center; justify-content: center; font-size: 24px; color: white; flex-shrink: 0;">👤</div>
-    <div class="user-profile-info">
-      <div class="user-fullname" id="user-fullname">کاربر جدید</div>
-      <div class="user-subtext" id="user-subtext">@username</div>
-      <div class="user-level-badge" id="user-level">سطح آموزشی: تعیین نشده</div>
-    </div>
-  </div>
-
-  <!-- ۱. نمودار میله‌ای (پیش‌فرض: صفر) -->
-  <div class="card">
-    <div class="chart-header">
-      <span class="chart-title">📊 افت و خیز یادگیری (۷ روز گذشته)</span>
-      <span class="chart-badge" id="chart-badge-status">شروع مسیر 🚀</span>
-    </div>
-    <div class="bar-chart-container">
-      <div class="bar-col"><div class="bar-wrapper"><div class="bar-fill" style="height: 5%;"></div></div><span class="bar-label">ش</span></div>
-      <div class="bar-col"><div class="bar-wrapper"><div class="bar-fill" style="height: 5%;"></div></div><span class="bar-label">۱ش</span></div>
-      <div class="bar-col"><div class="bar-wrapper"><div class="bar-fill" style="height: 5%;"></div></div><span class="bar-label">۲ش</span></div>
-      <div class="bar-col"><div class="bar-wrapper"><div class="bar-fill" style="height: 5%;"></div></div><span class="bar-label">۳ش</span></div>
-      <div class="bar-col"><div class="bar-wrapper"><div class="bar-fill" style="height: 5%;"></div></div><span class="bar-label">۴ش</span></div>
-      <div class="bar-col"><div class="bar-wrapper"><div class="bar-fill" style="height: 5%;"></div></div><span class="bar-label">۵ش</span></div>
-      <div class="bar-col"><div class="bar-wrapper"><div class="bar-fill" style="height: 5%;"></div></div><span class="bar-label">ج</span></div>
-    </div>
-  </div>
-
-  <!-- ۲. نمودار گرد دونات (پیش‌فرض: صفر٪) -->
-  <div class="card">
-    <div class="chart-header">
-      <span class="chart-title">🎯 تسلط بر مهارت‌های ۴‌گانه</span>
-      <span style="font-size: 0.75rem; color: var(--text-sub);" id="overall-percent-label">مجموع ۰٪</span>
-    </div>
-    <div class="donut-section">
-      <div class="donut-chart-wrapper">
-        <svg viewBox="0 0 100 100">
-          <circle class="donut-bg" cx="50" cy="50" r="38"></circle>
-          <circle class="donut-segment" cx="50" cy="50" r="38" stroke="#8b5cf6" stroke-dasharray="238.7" stroke-dashoffset="238.7"></circle>
-          <circle class="donut-segment" cx="50" cy="50" r="38" stroke="#38bdf8" stroke-dasharray="238.7" stroke-dashoffset="238.7"></circle>
-          <circle class="donut-segment" cx="50" cy="50" r="38" stroke="#10b981" stroke-dasharray="238.7" stroke-dashoffset="238.7"></circle>
-        </svg>
-        <div class="donut-center-text">
-          <span class="donut-percent">۰٪</span>
-          <span class="donut-subtext">میزان تسلط</span>
-        </div>
+    <!-- ۱. صفحه اصلی داشبورد -->
+    <section id="dashboard-screen" class="app-screen">
+      <!-- خلاصه وضعیت کاربر -->
+      <div class="dashboard-summary-card">
+        <h3>📊 خلاصه وضعیت آموزشی</h3>
+        <p>سطح فعلی: <strong id="dash-user-level">تعیین‌نشده</strong></p>
+        <p>وضعیت اشتراک: <span id="dash-sub-status">آزمایشی</span></p>
+        <p>زنجیره مطالعه: <span id="dash-study-streak">۰ روز</span></p>
+        <p class="summary-box" id="dash-analysis-summary">در حال دریافت تحلیل هوش مصنوعی...</p>
       </div>
 
-      <div class="skills-legend">
-        <div class="legend-item"><div class="legend-dot-group"><span class="legend-dot" style="background: #8b5cf6;"></span><span>شنیداری</span></div><span style="font-weight: bold;">۰٪</span></div>
-        <div class="legend-item"><div class="legend-dot-group"><span class="legend-dot" style="background: #38bdf8;"></span><span>گفتار</span></div><span style="font-weight: bold;">۰٪</span></div>
-        <div class="legend-item"><div class="legend-dot-group"><span class="legend-dot" style="background: #10b981;"></span><span>خوانش</span></div><span style="font-weight: bold;">۰٪</span></div>
-        <div class="legend-item"><div class="legend-dot-group"><span class="legend-dot" style="background: #f59e0b;"></span><span>نگارش</span></div><span style="font-weight: bold;">۰٪</span></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ۳. نقشه راه واقعی (پیش‌فرض: شروع از صفر) -->
-  <div class="card">
-    <div class="chart-header">
-      <span class="chart-title">🗺️ جایگاه شما در دنیای واقعی</span>
-    </div>
-    
-    <div class="roadmap-container">
-      <div class="roadmap-track-line"></div>
-      <div class="roadmap-track-progress" style="height: 0%;"></div>
-
-      <div class="roadmap-step active">
-        <div class="roadmap-node">📍</div>
-        <div class="roadmap-content">
-          <h5>مفاهیم پایه و مکالمات روزمره</h5>
-          <p>درک جملات ساده، خرید، معرفی خود و پاسخ به سوالات اولیه.</p>
-          <div class="roadmap-pin-badge">📍 نقطه شروع شما</div>
-        </div>
+      <!-- کارت شروع آزمون (فقط برای کاربر بدون سطح) -->
+      <div id="quiz-start-card" class="card" style="display: none;">
+        <h3>📝 آزمون تعیین سطح هوشمند</h3>
+        <p>برای تنظیم مسیر اختصاصی، پاسخ‌های زیر را تکمیل کنید:</p>
+        <form onsubmit="submitPlacementTest(event)">
+          <input type="text" id="quiz-q1" placeholder="سوال ۱: خودتان را معرفی کنید" required>
+          <input type="text" id="quiz-q2" placeholder="سوال ۲: هدف شما از یادگیری زبان چیست؟" required>
+          <input type="text" id="quiz-q3" placeholder="سوال ۳: روزانه چند دقیقه زمان دارید؟" required>
+          <input type="text" id="quiz-q4" placeholder="سوال ۴: یک جمله درباره شغل خود بنویسید" required>
+          <input type="text" id="quiz-q5" placeholder="سوال ۵: ترجمه: I have been working here" required>
+          <button type="submit" class="primary-btn">تحلیل آزمون با Gemini 2.5</button>
+        </form>
       </div>
 
-      <div class="roadmap-step">
-        <div class="roadmap-node"></div>
-        <div class="roadmap-content">
-          <h5>مکالمه روان و ارتباطات کاری/سفر</h5>
-          <p>گذران امور سفرهای خارجی و بیان نظرات بدون نیاز به مترجم.</p>
-        </div>
+      <!-- کارت نتیجه آزمون (نمایش قبل از ورود به درس اول) -->
+      <div id="quiz-results-card" class="card" style="display: none;">
+        <h3>🎯 نتیجه ارزیابی اولیه</h3>
+        <p>سطح شناسایی‌شده: <strong id="user-cefr-level">A1</strong></p>
+        <p id="ai-analysis-text"></p>
+        <button class="primary-btn" onclick="startFirstLesson()">ورود به اولین جلسه درس ➔</button>
       </div>
 
-      <div class="roadmap-step">
-        <div class="roadmap-node"></div>
-        <div class="roadmap-content">
-          <h5>آمادگی آزمون‌های بین‌المللی (IELTS / TOEFL)</h5>
-          <p>تسلّط آکادمیک، درک کامل فیلم‌های بدون زیرنویس و نگارش متون پیچیده.</p>
-        </div>
+      <!-- دکمه‌های دسترسی سریع داشبورد -->
+      <div class="navigation-grid">
+        <button onclick="showScreen('lesson-screen'); startFirstLesson();">📚 جلسه درسی جاری</button>
+        <button onclick="showScreen('leitner-screen'); loadLeitnerCards();">📦 جعبه لایتنر هوشمند</button>
+
+        <button onclick="showScreen('payment-screen');">💳 ارتقا و خرید اشتراک</button>
+        <button onclick="showScreen('support-screen');">🎧 پشتیبانی و تیکت</button>
       </div>
-    </div>
-  </div>
-
-  <!-- کارت زمان باقی‌مانده از اشتراک -->
-  <div class="card">
-    <div class="timer-header">
-      <span style="font-size: 13px; color: var(--text-sub);">
-        زمان باقی‌مانده از اشتراک 
-        <span class="info-btn" onclick="openModal('modal-sub-info')" title="راهنما">ℹ️</span>
-      </span>
-    </div>
-    <div class="timer-box">
-      <div class="timer-unit"><div class="timer-val" id="t-sec">00</div><div class="timer-lbl">ثانیه</div></div>
-      <div class="timer-unit"><div class="timer-val" id="t-min">00</div><div class="timer-lbl">دقیقه</div></div>
-      <div class="timer-unit"><div class="timer-val" id="t-hrs">00</div><div class="timer-lbl">ساعت</div></div>
-      <div class="timer-unit"><div class="timer-val" id="t-day">00</div><div class="timer-lbl">روز</div></div>
-    </div>
-  </div>
-
-  <div class="card" style="border-color: rgba(239, 68, 68, 0.3);">
-    <button type="button" class="btn btn-danger" onclick="openModal('modal-delete-acc')">🗑️ حذف حساب کاربری و تمام داده‌ها</button>
-  </div>
-
-</main>
-
-    <!-- ========================================================= -->
-    <!-- صفحه ۲: مرکز آموزش و ویزارد تعیین سطح                     -->
-    <!-- ========================================================= -->
-    <section id="tab-learn" class="tab-content">
-      
-      <!-- کارت شروع اولیه آزمون -->
-      <div id="quiz-start-card" class="card" style="text-align: center; padding: 28px 16px;">
-        <div style="font-size: 40px; margin-bottom: 12px;">🎓</div>
-        <h2>مسیر اختصاصی آموزش شما</h2>
-        <p style="color: var(--text-sub); margin: 12px 0 20px 0; font-size: 13px; line-height: 1.6;">
-          هوش مصنوعی Gemini پس از ۵ سوال کوتاه، سطح دقیق علمی شما را تحلیل کرده و برنامه درسی اختصاصی شما را طراحی می‌کند.
-        </p>
-        <button type="button" class="btn" onclick="startPlacementQuiz()">شروع آزمون تعیین سطح (۵ سوال)</button>
-      </div>
-
-      <!-- سوالات تعیین سطح -->
-      <div id="quiz-step-card" class="card" style="display: none;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-size: 12px; color: var(--text-sub);" id="quiz-step-indicator">سوال ۱ از ۵</span>
-          <span style="font-size: 12px; color: var(--accent); font-weight: bold;">آزمون تعیین سطح AI</span>
-        </div>
-        
-        <div class="quiz-progress-bar">
-          <div class="quiz-progress-fill" id="quiz-progress"></div>
-        </div>
-
-        <h3 id="quiz-question-title" style="margin-bottom: 14px; font-size: 15px; line-height: 1.5;">...</h3>
-
-        <div class="quiz-options" id="quiz-options-container"></div>
-
-        <div id="quiz-text-container" style="display: none; margin-top: 14px;">
-          <textarea id="quiz-text-answer" class="input-field" rows="3" placeholder="جمله خود را به انگلیسی بنویسید..."></textarea>
-        </div>
-
-        <button type="button" class="btn" id="quiz-next-btn" onclick="handleNextQuizStep()" style="margin-top: 18px;" disabled>تأیید و سوال بعدی ❯</button>
-      </div>
-
-      <!-- لودینگ AI -->
-      <div id="quiz-loading-card" class="card ai-loading-box" style="display: none;">
-        <div class="ai-spinner"></div>
-        <h3>هوش مصنوعی Gemini در حال تحلیل پاسخ‌های شماست...</h3>
-      </div>
-
-      <!-- کارنامه تعیین سطح -->
-      <div id="quiz-result-card" class="card" style="display: none; text-align: center; padding: 24px 16px;">
-        <div style="font-size: 44px; margin-bottom: 8px;">🎉</div>
-        <h2>کارنامه و مسیر اختصاصی شما</h2>
-        <div id="res-level-badge" style="display: inline-block; padding: 6px 16px; background: var(--primary-gradient); border-radius: 20px; font-weight: bold; margin: 12px 0; font-size: 14px;">سطح: A1</div>
-        
-        <div style="background: rgba(0,0,0,0.15); border: 1px solid var(--card-border); border-radius: 14px; padding: 14px; text-align: right; margin: 12px 0; font-size: 12px; line-height: 1.7;" id="res-analysis-text"></div>
-
-        <button type="button" class="btn" onclick="switchTab('learn')">🚀 ورود به داشبورد آموزشی</button>
-      </div>
-
-      <!-- ========================================================= -->
-      <!-- کامپوننت اصلی آموزش (متصل به Supabase)                   -->
-      <!-- ========================================================= -->
-      <div id="dash-main-container" style="display: none;">
-        
-        <!-- ۱. خلاصه مسیر -->
-        <div class="dash-card-summary">
-          <p id="dash-summary-text">در حال دریافت خلاصه مسیر...</p>
-        </div>
-
-        <!-- ۲. نوار درصد پیشرفت درس جاری -->
-        <div class="dash-lesson-bar">
-          <div class="dash-lesson-info">
-            <span style="font-size: 12px;">پیشرفت درس:</span>
-            <div class="dash-progress-track">
-              <div id="dash-progress-fill" class="dash-progress-fill"></div>
-            </div>
-            <span id="dash-progress-text" style="font-size: 12px; font-weight: bold;">0%</span>
-          </div>
-          <button type="button" class="btn-enter-lesson" onclick="onEnterLesson()">ورود</button>
-        </div>
-
-        <!-- ۳. وضعیت ۴ مهارت (گرید ۲در۲) -->
-        <div class="dash-skills-grid">
-          <div class="skill-card">
-            <h4>شنیداری (Listening)</h4>
-            <p id="skill-listening-text">...</p>
-          </div>
-          <div class="skill-card">
-            <h4>خوانش (Reading)</h4>
-            <p id="skill-reading-text">...</p>
-          </div>
-          <div class="skill-card">
-            <h4>گفتار (Speaking)</h4>
-            <p id="skill-speaking-text">...</p>
-          </div>
-          <div class="skill-card">
-            <h4>نگارش (Writing)</h4>
-            <p id="skill-writing-text">...</p>
-          </div>
-        </div>
-
-        <!-- ۴. زمان مطالعه امروز -->
-        <div class="dash-study-timer-card">
-          <h4>امروز چقدر وقت صرف آموزش کردید؟</h4>
-          <div style="display: flex; justify-content: center; gap: 10px;">
-            <div class="timer-unit"><div class="timer-val" id="timer-hours">۰</div><div class="timer-lbl">ساعت</div></div>
-            <div class="timer-unit"><div class="timer-val" id="timer-minutes">۰</div><div class="timer-lbl">دقیقه</div></div>
-            <div class="timer-unit"><div class="timer-val" id="timer-seconds">۰</div><div class="timer-lbl">ثانیه</div></div>
-          </div>
-        </div>
-
-        <!-- ۵. جمله انگیزشی -->
-        <div class="dash-card-quote">
-          <p id="dash-quote-text">...</p>
-        </div>
-
-      </div>
-
     </section>
 
-    <!-- ========================================================= -->
-    <!-- صفحه ۳: تنظیمات                                          -->
-    <!-- ========================================================= -->
-    <section id="tab-settings" class="tab-content">
+    <!-- ۲. صفحه ارائه درس (فاز ۴) -->
+    <section id="lesson-screen" class="app-screen" style="display: none;">
+      <button class="back-btn" onclick="showScreen('dashboard-screen')">🔙 بازگشت به داشبورد</button>
+      <div id="lesson-container"></div>
+    </section>
+
+    <!-- ۳. صفحه جعبه لایتنر (فاز ۵) -->
+    <section id="leitner-screen" class="app-screen" style="display: none;">
+      <button class="back-btn" onclick="showScreen('dashboard-screen')">🔙 بازگشت به داشبورد</button>
+      <div id="leitner-container"></div>
+    </section>
+
+    <!-- ۴. صفحه پشتیبانی و تنظیمات (فاز ۶) -->
+    <section id="support-screen" class="app-screen" style="display: none;">
+      <button class="back-btn" onclick="showScreen('dashboard-screen')">🔙 بازگشت به داشبورد</button>
       <div class="card">
-        <h3 style="margin-bottom: 16px;">⚙️ تنظیمات برنامه</h3>
-        <div class="settings-list">
-          <div class="setting-item-btn" onclick="openModal('modal-setting-display')"><div class="setting-item-left"><span>🎨</span> <span>تنظیمات نمایش</span></div><span class="chevron">❮</span></div>
-          <div class="setting-item-btn" onclick="openModal('modal-setting-audio')"><div class="setting-item-left"><span>🔊</span> <span>تنظیمات صوت</span></div><span class="chevron">❮</span></div>
-          <div class="setting-item-btn" onclick="openModal('modal-setting-reminder')"><div class="setting-item-left"><span>🔔</span> <span>یادآوری روزانه</span></div><span class="chevron">❮</span></div>
-          <div class="setting-item-btn" onclick="openModal('modal-setting-privacy')"><div class="setting-item-left"><span>🛡️</span> <span>حریم خصوصی</span></div><span class="chevron">❮</span></div>
-          <div class="setting-item-btn" onclick="openModal('modal-setting-about')"><div class="setting-item-left"><span>ℹ️</span> <span>درباره ما و پشتیبانی</span></div><span class="chevron">❮</span></div>
+        <h3>🎧 تماس با پشتیبانی</h3>
+        <form onsubmit="submitSupportTicket(event)">
+          <textarea id="support-message" rows="4" placeholder="پیام یا مشکل خود را بنویسید..." required></textarea>
+          <button type="submit" class="primary-btn">ارسال پیام به پشتیبانی</button>
+        </form>
+      </div>
+
+      <div class="card danger-zone">
+        <h3>⚙️ تنظیمات حساب کاربری</h3>
+        <button class="danger-btn" onclick="deleteAccount()">❌ حذف کامل حساب کاربری</button>
+      </div>
+    </section>
+
+    <!-- ۵. صفحه خرید اشتراک (فاز ۷) -->
+    <section id="payment-screen" class="app-screen" style="display: none;">
+      <button class="back-btn" onclick="showScreen('dashboard-screen')">🔙 بازگشت به داشبورد</button>
+      <div class="card">
+        <h3>💳 انتخاب بسته اشتراک</h3>
+        <div class="plan-item">
+          <h4>اشتراک ۱ ماهه</h4>
+          <p>قیمت: ۱۵۰,۰۰۰ تومان / ۵۰ ستاره تلگرام</p>
+          <button onclick="initiatePayment('zarinpal', 'monthly', 150000)">پرداخت با زرین‌پال</button>
+          <button onclick="initiatePayment('telegram_stars', 'monthly', 50)">پرداخت با Telegram Stars</button>
         </div>
       </div>
     </section>
   </div>
 
-  <!-- منوی شناور پایینی -->
-  <nav class="nav-bar">
-    <button type="button" class="nav-item side-btn" onclick="switchTab('settings', this)" title="تنظیمات">⚙️</button>
-    <button type="button" class="nav-item learn-center" onclick="switchTab('learn', this)" title="آموزش">🎓</button>
-    <button type="button" class="nav-item side-btn active" onclick="switchTab('dashboard', this)" title="داشبورد و پروفایل">👤</button>
-  </nav>
-
-  <!-- پاپ‌آپ‌ها (Modals) -->
-  <div class="modal" id="modal-sub-info">
-    <div class="modal-content">
-      <div class="modal-header"><h4>ℹ️ زمان باقی‌مانده از اشتراک</h4><button type="button" class="modal-close" onclick="closeModal('modal-sub-info')">✕</button></div>
-      <p style="font-size: 13px; color: var(--text-sub); line-height: 1.6;">دوره تست رایگان به مدت <b>۷ روز کامل</b> برای شما فعال شده است.</p>
-      <button type="button" class="btn btn-secondary" onclick="closeModal('modal-sub-info')" style="margin-top: 16px;">متوجه شدم</button>
-    </div>
-  </div>
-
-  <div class="modal" id="modal-delete-acc">
-    <div class="modal-content" style="text-align: center;">
-      <h3 style="color: var(--danger); margin-bottom: 10px;">⚠️ حذف حساب کاربری</h3>
-      <p style="font-size: 12px; color: var(--text-sub); margin-bottom: 16px;">تمام داده‌های شما به صورت دائمی پاک خواهد شد.</p>
-      <div style="display: flex; gap: 8px;">
-        <button type="button" class="btn btn-danger" onclick="executeAccountDeletion()">تأیید حذف کامل</button>
-        <button type="button" class="btn btn-secondary" onclick="closeModal('modal-delete-acc')">انصراف</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal" id="modal-setting-display">
-    <div class="modal-content">
-      <div class="modal-header"><h4>🎨 تنظیمات نمایش</h4><button type="button" class="modal-close" onclick="closeModal('modal-setting-display')">✕</button></div>
-      <select class="input-field"><option>وزیر متن (پیش‌فرض)</option></select>
-      <button type="button" class="btn" onclick="closeModal('modal-setting-display')">ذخیره تغییرات</button>
-    </div>
-  </div>
-
-  <div class="modal" id="modal-setting-audio">
-    <div class="modal-content">
-      <div class="modal-header"><h4>🔊 تنظیمات صوت</h4><button type="button" class="modal-close" onclick="closeModal('modal-setting-audio')">✕</button></div>
-      <select class="input-field"><option>1. الکس (مرد - رسمی)</option></select>
-      <button type="button" class="btn" onclick="closeModal('modal-setting-audio')">تأیید</button>
-    </div>
-  </div>
-
-  <div class="modal" id="modal-setting-reminder">
-    <div class="modal-content">
-      <div class="modal-header"><h4>🔔 یادآوری روزانه</h4><button type="button" class="modal-close" onclick="closeModal('modal-setting-reminder')">✕</button></div>
-      <input type="time" class="input-field" value="20:00">
-      <button type="button" class="btn" onclick="closeModal('modal-setting-reminder')">ثبت</button>
-    </div>
-  </div>
-
-  <div class="modal" id="modal-setting-privacy">
-    <div class="modal-content">
-      <div class="modal-header"><h4>🛡️ حریم خصوصی</h4><button type="button" class="modal-close" onclick="closeModal('modal-setting-privacy')">✕</button></div>
-      <p style="font-size: 12px; color: var(--text-sub); line-height: 1.6;">تمامی داده‌ها طبق استانداردهای امنیتی رمزنگاری می‌شوند.</p>
-      <button type="button" class="btn btn-secondary" onclick="closeModal('modal-setting-privacy')" style="margin-top: 14px;">بستن</button>
-    </div>
-  </div>
-
-  <div class="modal" id="modal-setting-about">
-    <div class="modal-content">
-      <div class="modal-header"><h4>ℹ️ پشتیبانی</h4><button type="button" class="modal-close" onclick="closeModal('modal-setting-about')">✕</button></div>
-      <input type="text" id="ticket-subject" class="input-field" placeholder="موضوع...">
-      <textarea id="ticket-body" class="input-field" rows="4" placeholder="متن پیام..."></textarea>
-      <button type="button" class="btn" onclick="submitContactForm()">ارسال پیام</button>
-    </div>
-  </div>
-
-  <!-- فراخوانی اسکریپت‌ها -->
+  <!-- بارگذاری اسکریپت‌های ماژولار -->
   <script src="js/config.js"></script>
-  <script src="js/utils.js"></script>
-  <script src="js/timer.js"></script>
   <script src="js/dashboard.js"></script>
   <script src="js/quiz.js"></script>
-  <script src="js/tts.js"></script>
-  <script src="js/learn.js"></script>
+  <script src="js/lesson.js"></script>
+  <script src="js/leitner.js"></script>
+  <script src="js/support.js"></script>
+  <script src="js/payment.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

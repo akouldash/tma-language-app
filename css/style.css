@@ -143,3 +143,55 @@ body { background: var(--bg-main); color: var(--text-main); padding-bottom: 110p
 .modal-content { background: var(--bg-main); border: 1px solid var(--card-border); border-radius: 24px; padding: 22px; max-width: 420px; width: 100%; max-height: 85vh; overflow-y: auto; box-shadow: var(--shadow); }
 .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--card-border); padding-bottom: 10px; }
 .modal-close { background: none; border: none; font-size: 20px; color: var(--text-sub); cursor: pointer; }
+
+/* =========================================================
+ * ۵. کدهای اختصاصی داشبورد تحلیلی (نمودار میله‌ای، دونات و نقشه راه)
+ * ========================================================= */
+
+/* --- نمودار میله‌ای (Bar Chart) --- */
+.chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.chart-title { font-size: 0.9rem; font-weight: bold; color: var(--text-main); }
+.chart-badge { font-size: 0.75rem; background: rgba(139, 92, 246, 0.15); color: var(--primary); padding: 4px 10px; border-radius: 12px; font-weight: 600; }
+
+.bar-chart-container { display: flex; align-items: flex-end; justify-content: space-between; height: 130px; padding-top: 20px; gap: 6px; }
+.bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; gap: 6px; }
+.bar-wrapper { width: 100%; height: 85px; display: flex; align-items: flex-end; justify-content: center; position: relative; }
+.bar-fill { width: 14px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1); position: relative; }
+.bar-fill.active { background: var(--primary-gradient); box-shadow: 0 0 12px rgba(168, 85, 247, 0.4); }
+.bar-fill.peak::after { content: ''; position: absolute; top: -6px; left: 50%; transform: translateX(-50%); width: 6px; height: 6px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 8px var(--accent); }
+.bar-label { font-size: 0.68rem; color: var(--text-sub); }
+
+/* --- نمودار گرد دونات (Donut Chart) --- */
+.donut-section { display: flex; align-items: center; justify-content: space-around; gap: 12px; margin-top: 8px; }
+.donut-chart-wrapper { position: relative; width: 110px; height: 110px; flex-shrink: 0; }
+.donut-chart-wrapper svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.donut-bg { fill: none; stroke: rgba(255, 255, 255, 0.08); stroke-width: 10; }
+.donut-segment { fill: none; stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset 0.8s ease; }
+.donut-center-text { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.donut-percent { font-size: 1.1rem; font-weight: bold; color: var(--text-main); }
+.donut-subtext { font-size: 0.65rem; color: var(--text-sub); }
+
+.skills-legend { display: flex; flex-direction: column; gap: 8px; flex-grow: 1; }
+.legend-item { display: flex; align-items: center; justify-content: space-between; font-size: 0.78rem; color: var(--text-main); }
+.legend-dot-group { display: flex; align-items: center; gap: 6px; }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+/* --- نقشه راه ملموس واقعی (Real-World Roadmap) --- */
+.roadmap-container { position: relative; padding: 10px 0; display: flex; flex-direction: column; gap: 18px; margin-top: 10px; }
+.roadmap-track-line { position: absolute; top: 15px; bottom: 15px; right: 19px; width: 3px; background: rgba(255, 255, 255, 0.1); border-radius: 2px; }
+.roadmap-track-progress { position: absolute; top: 15px; right: 19px; width: 3px; height: 55%; background: var(--primary-gradient); border-radius: 2px; transition: height 0.5s ease; }
+
+.roadmap-step { position: relative; display: flex; align-items: flex-start; gap: 14px; padding-right: 40px; }
+.roadmap-node { position: absolute; right: 11px; top: 2px; width: 18px; height: 18px; border-radius: 50%; background: var(--bg-main); border: 2px solid var(--text-sub); display: flex; align-items: center; justify-content: center; font-size: 9px; z-index: 2; transition: all 0.3s ease; }
+.roadmap-step.completed .roadmap-node { border-color: var(--success); background: var(--success); color: #fff; }
+.roadmap-step.active .roadmap-node { border-color: var(--accent); background: var(--primary); box-shadow: 0 0 10px var(--primary); animation: pulse 1.8s infinite; }
+
+.roadmap-content h5 { font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 2px; }
+.roadmap-content p { font-size: 0.73rem; color: var(--text-sub); line-height: 1.4; }
+.roadmap-pin-badge { display: inline-flex; align-items: center; gap: 4px; background: rgba(56, 189, 248, 0.15); color: var(--accent); border: 1px solid rgba(56, 189, 248, 0.3); font-size: 0.68rem; padding: 2px 8px; border-radius: 10px; font-weight: bold; margin-top: 4px; }
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.7); }
+  70% { box-shadow: 0 0 0 8px rgba(139, 92, 246, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); }
+}

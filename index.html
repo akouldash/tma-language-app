@@ -2,13 +2,14 @@
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Language Learning MiniApp</title>
 
   <!-- کنسول عیب‌یابی مینی‌آپ -->
   <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
   <script>eruda.init();</script>
-  
+
+  <!-- اسکریپت رسمی تلگرام -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <!-- فایل استایل مجزا -->
@@ -18,21 +19,21 @@
 
   <div class="container">
     <!-- هدر بالای برنامه -->
-    <div class="top-header">
+    <header class="top-header">
       <div style="font-size: 18px; font-weight: bold;">💎 Language Core</div>
-      <button class="theme-toggle-btn" id="theme-btn" onclick="toggleTheme()" title="تغییر تم">☀️</button>
-    </div>
+      <button type="button" class="theme-toggle-btn" id="theme-btn" onclick="toggleTheme()" title="تغییر تم">☀️</button>
+    </header>
 
     <!-- ========================================================= -->
     <!-- صفحه ۱: داشبورد و پروفایل کاربر                          -->
     <!-- ========================================================= -->
-    <div id="tab-dashboard" class="tab-content active">
+    <main id="tab-dashboard" class="tab-content active">
       
       <!-- کارت مشخصات کاربر -->
       <div class="card" style="display: flex; align-items: center; gap: 14px;">
         <div style="width: 52px; height: 52px; border-radius: 50%; background: var(--primary-gradient); display: flex; align-items: center; justify-content: center; font-size: 24px; color: white; flex-shrink: 0;">👤</div>
         <div class="user-profile-info">
-          <div class="user-fullname" id="user-fullname">...</div>
+          <div class="user-fullname" id="user-fullname">در حال دریافت...</div>
           <div class="user-subtext" id="user-subtext">...</div>
           <div class="user-level-badge" id="user-level">سطح آموزشی: تعیین نشده</div>
         </div>
@@ -55,43 +56,60 @@
       </div>
 
       <!-- ========================================================= -->
-      <!-- کامپوننت جدید داشبورد آموزشی (متصل به Supabase)           -->
+      <!-- کامپوننت داشبورد آموزشی (متصل به Supabase)               -->
       <!-- ========================================================= -->
       <div id="dash-main-container" style="display: none;">
+        
         <!-- ۱. خلاصه مسیر -->
         <div class="dash-card-summary">
           <p id="dash-summary-text">در حال دریافت خلاصه مسیر...</p>
         </div>
 
-        <!-- ۲. نوار درصد پیشرفت درس جاری -->
-        <div class="dash-lesson-bar">
-          <div class="dash-lesson-info">
-            <span style="font-size: 12px;">پیشرفت درس:</span>
-            <div class="dash-progress-track">
-              <div id="dash-progress-fill" class="dash-progress-fill"></div>
-            </div>
-            <span id="dash-progress-text" style="font-size: 12px; font-weight: bold;">0%</span>
+        <!-- ۲. کارت درس فعال و درصد پیشرفت -->
+        <div class="active-lesson-card">
+          <div class="lesson-header">
+            <span class="badge-level" id="dash-lesson-badge">درس جاری</span>
+            <span class="lesson-topic" id="dash-lesson-topic">...</span>
           </div>
-          <button class="btn-enter-lesson" onclick="onEnterLesson()">ورود</button>
+          <p class="lesson-desc" id="dash-lesson-desc">در حال بارگذاری اطلاعات درس...</p>
+          
+          <div class="progress-section">
+            <div class="progress-info">
+              <span>پیشرفت درس</span>
+              <span id="dash-progress-text">0%</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div id="dash-progress-fill" class="progress-bar-fill" style="width: 0%;"></div>
+            </div>
+          </div>
+
+          <button type="button" class="btn-primary-action" onclick="onEnterLesson()">
+            <span>ورود به درس</span>
+            <span>❯</span>
+          </button>
         </div>
 
-        <!-- ۳. وضعیت ۴ مهارت (گرید ۲در۲) -->
-        <div class="dash-skills-grid">
-          <div class="skill-card">
-            <h4>شنیداری (Listening)</h4>
-            <p id="skill-listening-text">...</p>
+        <!-- ۳. وضعیت ۴ مهارت (گرید مدرن) -->
+        <div class="skills-grid" style="margin-bottom: 14px;">
+          <div class="skill-item">
+            <span class="skill-icon">🎧</span>
+            <span class="skill-title">شنیداری</span>
+            <p id="skill-listening-text" style="font-size: 0.75rem; color: var(--text-sub);">...</p>
           </div>
-          <div class="skill-card">
-            <h4>خوانش (Reading)</h4>
-            <p id="skill-reading-text">...</p>
+          <div class="skill-item">
+            <span class="skill-icon">📖</span>
+            <span class="skill-title">خوانش</span>
+            <p id="skill-reading-text" style="font-size: 0.75rem; color: var(--text-sub);">...</p>
           </div>
-          <div class="skill-card">
-            <h4>گفتار (Speaking)</h4>
-            <p id="skill-speaking-text">...</p>
+          <div class="skill-item">
+            <span class="skill-icon">🗣️</span>
+            <span class="skill-title">گفتار</span>
+            <p id="skill-speaking-text" style="font-size: 0.75rem; color: var(--text-sub);">...</p>
           </div>
-          <div class="skill-card">
-            <h4>نگارش (Writing)</h4>
-            <p id="skill-writing-text">...</p>
+          <div class="skill-item">
+            <span class="skill-icon">✍️</span>
+            <span class="skill-title">نگارش</span>
+            <p id="skill-writing-text" style="font-size: 0.75rem; color: var(--text-sub);">...</p>
           </div>
         </div>
 
@@ -113,14 +131,14 @@
 
       <!-- دکمه حذف حساب کاربری -->
       <div class="card" style="border-color: rgba(239, 68, 68, 0.3);">
-        <button class="btn btn-danger" onclick="openModal('modal-delete-acc')">🗑️ حذف حساب کاربری و تمام داده‌ها</button>
+        <button type="button" class="btn btn-danger" onclick="openModal('modal-delete-acc')">🗑️ حذف حساب کاربری و تمام داده‌ها</button>
       </div>
-    </div>
+    </main>
 
     <!-- ========================================================= -->
     <!-- صفحه ۲: مرکز آموزش و ویزارد تعیین سطح                     -->
     <!-- ========================================================= -->
-    <div id="tab-learn" class="tab-content">
+    <section id="tab-learn" class="tab-content">
       
       <!-- کارت شروع اولیه آزمون -->
       <div id="quiz-start-card" class="card" style="text-align: center; padding: 28px 16px;">
@@ -129,7 +147,7 @@
         <p style="color: var(--text-sub); margin: 12px 0 20px 0; font-size: 13px; line-height: 1.6;">
           هوش مصنوعی Gemini پس از ۵ سوال کوتاه، سطح دقیق علمی شما را تحلیل کرده و برنامه درسی اختصاصی شما را طراحی می‌کند.
         </p>
-        <button class="btn" onclick="startPlacementQuiz()">شروع آزمون تعیین سطح (۵ سوال)</button>
+        <button type="button" class="btn" onclick="startPlacementQuiz()">شروع آزمون تعیین سطح (۵ سوال)</button>
       </div>
 
       <!-- سوالات تعیین سطح -->
@@ -148,10 +166,10 @@
         <div class="quiz-options" id="quiz-options-container"></div>
 
         <div id="quiz-text-container" style="display: none; margin-top: 14px;">
-          <textarea id="quiz-text-answer" class="input-field" placeholder="جمله خود را به انگلیسی بنویسید..."></textarea>
+          <textarea id="quiz-text-answer" class="input-field" rows="3" placeholder="جمله خود را به انگلیسی بنویسید..."></textarea>
         </div>
 
-        <button class="btn" id="quiz-next-btn" onclick="handleNextQuizStep()" style="margin-top: 18px;" disabled>تأیید و سوال بعدی ❯</button>
+        <button type="button" class="btn" id="quiz-next-btn" onclick="handleNextQuizStep()" style="margin-top: 18px;" disabled>تأیید و سوال بعدی ❯</button>
       </div>
 
       <!-- لودینگ AI -->
@@ -168,15 +186,15 @@
         
         <div style="background: rgba(0,0,0,0.15); border: 1px solid var(--card-border); border-radius: 14px; padding: 14px; text-align: right; margin: 12px 0; font-size: 12px; line-height: 1.7;" id="res-analysis-text"></div>
 
-        <button class="btn" onclick="switchTab('dashboard')">🚀 ورود به داشبورد آموزشی</button>
+        <button type="button" class="btn" onclick="switchTab('dashboard')">🚀 ورود به داشبورد آموزشی</button>
       </div>
 
-    </div>
+    </section>
 
     <!-- ========================================================= -->
     <!-- صفحه ۳: تنظیمات                                          -->
     <!-- ========================================================= -->
-    <div id="tab-settings" class="tab-content">
+    <section id="tab-settings" class="tab-content">
       <div class="card">
         <h3 style="margin-bottom: 16px;">⚙️ تنظیمات برنامه</h3>
         <div class="settings-list">
@@ -187,74 +205,74 @@
           <div class="setting-item-btn" onclick="openModal('modal-setting-about')"><div class="setting-item-left"><span>ℹ️</span> <span>درباره ما و پشتیبانی</span></div><span class="chevron">❮</span></div>
         </div>
       </div>
-    </div>
+    </section>
   </div>
 
   <!-- منوی شناور پایینی -->
   <nav class="nav-bar">
-    <button class="nav-item side-btn" onclick="switchTab('settings', this)" title="تنظیمات">⚙️</button>
-    <button class="nav-item learn-center" onclick="switchTab('learn', this)" title="آموزش">🎓</button>
-    <button class="nav-item side-btn active" onclick="switchTab('dashboard', this)" title="داشبورد و پروفایل">👤</button>
+    <button type="button" class="nav-item side-btn" onclick="switchTab('settings', this)" title="تنظیمات">⚙️</button>
+    <button type="button" class="nav-item learn-center" onclick="switchTab('learn', this)" title="آموزش">🎓</button>
+    <button type="button" class="nav-item side-btn active" onclick="switchTab('dashboard', this)" title="داشبورد و پروفایل">👤</button>
   </nav>
 
-  <!-- پاپ‌آپ‌ها -->
+  <!-- پاپ‌آپ‌ها (Modals) -->
   <div class="modal" id="modal-sub-info">
     <div class="modal-content">
-      <div class="modal-header"><h4>ℹ️ زمان باقی‌مانده از اشتراک</h4><button class="modal-close" onclick="closeModal('modal-sub-info')">✕</button></div>
+      <div class="modal-header"><h4>ℹ️ زمان باقی‌مانده از اشتراک</h4><button type="button" class="modal-close" onclick="closeModal('modal-sub-info')">✕</button></div>
       <p style="font-size: 13px; color: var(--text-sub); line-height: 1.6;">دوره تست رایگان به مدت <b>۷ روز کامل</b> برای شما فعال شده است.</p>
-      <button class="btn btn-secondary" onclick="closeModal('modal-sub-info')" style="margin-top: 16px;">متوجه شدم</button>
+      <button type="button" class="btn btn-secondary" onclick="closeModal('modal-sub-info')" style="margin-top: 16px;">متوجه شدم</button>
     </div>
   </div>
 
   <div class="modal" id="modal-delete-acc">
     <div class="modal-content" style="text-align: center;">
       <h3 style="color: var(--danger); margin-bottom: 10px;">⚠️ حذف حساب کاربری</h3>
-      <p style="font-size: 12px; color: var(--text-sub); margin-bottom: 16px;">تمام داده‌های شما دائمی پاک خواهد شد.</p>
+      <p style="font-size: 12px; color: var(--text-sub); margin-bottom: 16px;">تمام داده‌های شما به صورت دائمی پاک خواهد شد.</p>
       <div style="display: flex; gap: 8px;">
-        <button class="btn btn-danger" onclick="executeAccountDeletion()">تأیید حذف کامل</button>
-        <button class="btn btn-secondary" onclick="closeModal('modal-delete-acc')">انصراف</button>
+        <button type="button" class="btn btn-danger" onclick="executeAccountDeletion()">تأیید حذف کامل</button>
+        <button type="button" class="btn btn-secondary" onclick="closeModal('modal-delete-acc')">انصراف</button>
       </div>
     </div>
   </div>
 
   <div class="modal" id="modal-setting-display">
     <div class="modal-content">
-      <div class="modal-header"><h4>🎨 تنظیمات نمایش</h4><button class="modal-close" onclick="closeModal('modal-setting-display')">✕</button></div>
+      <div class="modal-header"><h4>🎨 تنظیمات نمایش</h4><button type="button" class="modal-close" onclick="closeModal('modal-setting-display')">✕</button></div>
       <select class="input-field"><option>وزیر متن (پیش‌فرض)</option></select>
-      <button class="btn" onclick="closeModal('modal-setting-display')">ذخیره تغییرات</button>
+      <button type="button" class="btn" onclick="closeModal('modal-setting-display')">ذخیره تغییرات</button>
     </div>
   </div>
 
   <div class="modal" id="modal-setting-audio">
     <div class="modal-content">
-      <div class="modal-header"><h4>🔊 تنظیمات صوت</h4><button class="modal-close" onclick="closeModal('modal-setting-audio')">✕</button></div>
+      <div class="modal-header"><h4>🔊 تنظیمات صوت</h4><button type="button" class="modal-close" onclick="closeModal('modal-setting-audio')">✕</button></div>
       <select class="input-field"><option>1. الکس (مرد - رسمی)</option></select>
-      <button class="btn" onclick="closeModal('modal-setting-audio')">تأیید</button>
+      <button type="button" class="btn" onclick="closeModal('modal-setting-audio')">تأیید</button>
     </div>
   </div>
 
   <div class="modal" id="modal-setting-reminder">
     <div class="modal-content">
-      <div class="modal-header"><h4>🔔 یادآوری روزانه</h4><button class="modal-close" onclick="closeModal('modal-setting-reminder')">✕</button></div>
+      <div class="modal-header"><h4>🔔 یادآوری روزانه</h4><button type="button" class="modal-close" onclick="closeModal('modal-setting-reminder')">✕</button></div>
       <input type="time" class="input-field" value="20:00">
-      <button class="btn" onclick="closeModal('modal-setting-reminder')">ثبت</button>
+      <button type="button" class="btn" onclick="closeModal('modal-setting-reminder')">ثبت</button>
     </div>
   </div>
 
   <div class="modal" id="modal-setting-privacy">
     <div class="modal-content">
-      <div class="modal-header"><h4>🛡️ حریم خصوصی</h4><button class="modal-close" onclick="closeModal('modal-setting-privacy')">✕</button></div>
+      <div class="modal-header"><h4>🛡️ حریم خصوصی</h4><button type="button" class="modal-close" onclick="closeModal('modal-setting-privacy')">✕</button></div>
       <p style="font-size: 12px; color: var(--text-sub); line-height: 1.6;">تمامی داده‌ها طبق استانداردهای امنیتی رمزنگاری می‌شوند.</p>
-      <button class="btn btn-secondary" onclick="closeModal('modal-setting-privacy')" style="margin-top: 14px;">بستن</button>
+      <button type="button" class="btn btn-secondary" onclick="closeModal('modal-setting-privacy')" style="margin-top: 14px;">بستن</button>
     </div>
   </div>
 
   <div class="modal" id="modal-setting-about">
     <div class="modal-content">
-      <div class="modal-header"><h4>ℹ️ پشتیبانی</h4><button class="modal-close" onclick="closeModal('modal-setting-about')">✕</button></div>
+      <div class="modal-header"><h4>ℹ️ پشتیبانی</h4><button type="button" class="modal-close" onclick="closeModal('modal-setting-about')">✕</button></div>
       <input type="text" id="ticket-subject" class="input-field" placeholder="موضوع...">
-      <textarea id="ticket-body" class="input-field" placeholder="متن پیام..."></textarea>
-      <button class="btn" onclick="submitContactForm()">ارسال پیام</button>
+      <textarea id="ticket-body" class="input-field" rows="4" placeholder="متن پیام..."></textarea>
+      <button type="button" class="btn" onclick="submitContactForm()">ارسال پیام</button>
     </div>
   </div>
 

@@ -1,28 +1,35 @@
 /**
  * js/tts.js
- * موتور پخش صوتی تلفظ لغات و متن‌های آموزشی
+ * موتور پخش صوتی تلفظ لغات و متن‌ها
  */
 
-function speakText(text, lang = 'en-US', rate = 0.9) {
+function speakText(text, lang = 'en-US', rate = 0.85) {
   if (!('speechSynthesis' in window)) {
     alert('مرورگر شما از پخش صوتی پشتیبانی نمی‌کند.');
     return;
   }
 
-  // متوقف کردن پخش‌های قبلی
+  // متوقف کردن پخش‌های قبلی جهت جلوگیری از تداخل صداها
   window.speechSynthesis.cancel();
 
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = lang;
-  utterance.rate = rate; // سرعت پخش (۰.۹ برای درک بهتر)
+  utterance.rate = rate; // سرعت خوانش (۰.۸۵ برای تلفظ شمرده و آموزشی)
   utterance.pitch = 1.0;
 
-  // انتخاب گوینده طبیعی انگلیسی در صورت وجود
+  // انتخاب بهترین گوینده انگلیسی موجود در دستگاه
   const voices = window.speechSynthesis.getVoices();
-  const preferredVoice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Google') || v.name.includes('Natural')));
-  if (preferredVoice) {
-    utterance.voice = preferredVoice;
+  const englishVoice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Samantha')));
+  if (englishVoice) {
+    utterance.voice = englishVoice;
   }
 
   window.speechSynthesis.speak(utterance);
+}
+
+// بارگذاری پیش‌فرض صداها در مرورگر
+if ('speechSynthesis' in window) {
+  window.speechSynthesis.onvoiceschanged = () => {
+    window.speechSynthesis.getVoices();
+  };
 }

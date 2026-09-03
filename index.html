@@ -25,7 +25,7 @@
     </header>
 
 <!-- ========================================================= -->
-<!-- صفحه ۱: داشبورد و پروفایل کاربر                          -->
+<!-- صفحه ۱: داشبورد و پروفایل کاربر (حالت اولیه: صفر)         -->
 <!-- ========================================================= -->
 <main id="tab-dashboard" class="tab-content active">
   
@@ -35,95 +35,57 @@
     <div class="user-profile-info">
       <div class="user-fullname" id="user-fullname">کاربر جدید</div>
       <div class="user-subtext" id="user-subtext">@username</div>
-      <div class="user-level-badge" id="user-level">سطح آموزشی: متوسط (B1)</div>
+      <div class="user-level-badge" id="user-level">سطح آموزشی: تعیین نشده</div>
     </div>
   </div>
 
-  <!-- ۱. نمودار میله‌ای روند فعالیت و نقاط اوج/فرود -->
+  <!-- ۱. نمودار میله‌ای (پیش‌فرض: صفر) -->
   <div class="card">
     <div class="chart-header">
       <span class="chart-title">📊 افت و خیز یادگیری (۷ روز گذشته)</span>
-      <span class="chart-badge">پیوستگی عالی 🔥</span>
+      <span class="chart-badge" id="chart-badge-status">شروع مسیر 🚀</span>
     </div>
     <div class="bar-chart-container">
-      <div class="bar-col">
-        <div class="bar-wrapper"><div class="bar-fill active" style="height: 40%;"></div></div>
-        <span class="bar-label">ش</span>
-      </div>
-      <div class="bar-col">
-        <div class="bar-wrapper"><div class="bar-fill active" style="height: 65%;"></div></div>
-        <span class="bar-label">۱ش</span>
-      </div>
-      <div class="bar-col">
-        <div class="bar-wrapper"><div class="bar-fill active peak" style="height: 95%;"></div></div>
-        <span class="bar-label">۲ش</span>
-      </div>
-      <div class="bar-col">
-        <div class="bar-wrapper"><div class="bar-fill active" style="height: 50%;"></div></div>
-        <span class="bar-label">۳ش</span>
-      </div>
-      <div class="bar-col">
-        <div class="bar-wrapper"><div class="bar-fill active" style="height: 80%;"></div></div>
-        <span class="bar-label">۴ش</span>
-      </div>
-      <div class="bar-col">
-        <div class="bar-wrapper"><div class="bar-fill" style="height: 25%;"></div></div>
-        <span class="bar-label">۵ش</span>
-      </div>
-      <div class="bar-col">
-        <div class="bar-wrapper"><div class="bar-fill active" style="height: 60%;"></div></div>
-        <span class="bar-label">ج</span>
-      </div>
+      <div class="bar-col"><div class="bar-wrapper"><div class="bar-fill" style="height: 5%;"></div></div><span class="bar-label">ش</span></div>
+      <div class="bar-col"><div class="bar-wrapper"><div class="bar-fill" style="height: 5%;"></div></div><span class="bar-label">۱ش</span></div>
+      <div class="bar-col"><div class="bar-wrapper"><div class="bar-fill" style="height: 5%;"></div></div><span class="bar-label">۲ش</span></div>
+      <div class="bar-col"><div class="bar-wrapper"><div class="bar-fill" style="height: 5%;"></div></div><span class="bar-label">۳ش</span></div>
+      <div class="bar-col"><div class="bar-wrapper"><div class="bar-fill" style="height: 5%;"></div></div><span class="bar-label">۴ش</span></div>
+      <div class="bar-col"><div class="bar-wrapper"><div class="bar-fill" style="height: 5%;"></div></div><span class="bar-label">۵ش</span></div>
+      <div class="bar-col"><div class="bar-wrapper"><div class="bar-fill" style="height: 5%;"></div></div><span class="bar-label">ج</span></div>
     </div>
   </div>
 
-  <!-- ۲. نمودار گرد دونات (توزیع ۴ مهارت اصلی) -->
+  <!-- ۲. نمودار گرد دونات (پیش‌فرض: صفر٪) -->
   <div class="card">
     <div class="chart-header">
       <span class="chart-title">🎯 تسلط بر مهارت‌های ۴‌گانه</span>
-      <span style="font-size: 0.75rem; color: var(--text-sub);">مجموع ۶۴٪</span>
+      <span style="font-size: 0.75rem; color: var(--text-sub);" id="overall-percent-label">مجموع ۰٪</span>
     </div>
     <div class="donut-section">
-      <!-- نمودار SVG دونات -->
       <div class="donut-chart-wrapper">
         <svg viewBox="0 0 100 100">
           <circle class="donut-bg" cx="50" cy="50" r="38"></circle>
-          <!-- مهارت شنیداری (بنفش) -->
-          <circle class="donut-segment" cx="50" cy="50" r="38" stroke="#8b5cf6" stroke-dasharray="238.7" stroke-dashoffset="60"></circle>
-          <!-- مهارت گفتار (آبی) -->
-          <circle class="donut-segment" cx="50" cy="50" r="38" stroke="#38bdf8" stroke-dasharray="238.7" stroke-dashoffset="130"></circle>
-          <!-- مهارت خوانش (سبز) -->
-          <circle class="donut-segment" cx="50" cy="50" r="38" stroke="#10b981" stroke-dasharray="238.7" stroke-dashoffset="190"></circle>
+          <circle class="donut-segment" cx="50" cy="50" r="38" stroke="#8b5cf6" stroke-dasharray="238.7" stroke-dashoffset="238.7"></circle>
+          <circle class="donut-segment" cx="50" cy="50" r="38" stroke="#38bdf8" stroke-dasharray="238.7" stroke-dashoffset="238.7"></circle>
+          <circle class="donut-segment" cx="50" cy="50" r="38" stroke="#10b981" stroke-dasharray="238.7" stroke-dashoffset="238.7"></circle>
         </svg>
         <div class="donut-center-text">
-          <span class="donut-percent">۶۴٪</span>
+          <span class="donut-percent">۰٪</span>
           <span class="donut-subtext">میزان تسلط</span>
         </div>
       </div>
 
-      <!-- راهنمای رنگ‌ها -->
       <div class="skills-legend">
-        <div class="legend-item">
-          <div class="legend-dot-group"><span class="legend-dot" style="background: #8b5cf6;"></span><span>شنیداری</span></div>
-          <span style="font-weight: bold;">۷۵٪</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-dot-group"><span class="legend-dot" style="background: #38bdf8;"></span><span>گفتار</span></div>
-          <span style="font-weight: bold;">۶۰٪</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-dot-group"><span class="legend-dot" style="background: #10b981;"></span><span>خوانش</span></div>
-          <span style="font-weight: bold;">۷۰٪</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-dot-group"><span class="legend-dot" style="background: #f59e0b;"></span><span>نگارش</span></div>
-          <span style="font-weight: bold;">۵۰٪</span>
-        </div>
+        <div class="legend-item"><div class="legend-dot-group"><span class="legend-dot" style="background: #8b5cf6;"></span><span>شنیداری</span></div><span style="font-weight: bold;">۰٪</span></div>
+        <div class="legend-item"><div class="legend-dot-group"><span class="legend-dot" style="background: #38bdf8;"></span><span>گفتار</span></div><span style="font-weight: bold;">۰٪</span></div>
+        <div class="legend-item"><div class="legend-dot-group"><span class="legend-dot" style="background: #10b981;"></span><span>خوانش</span></div><span style="font-weight: bold;">۰٪</span></div>
+        <div class="legend-item"><div class="legend-dot-group"><span class="legend-dot" style="background: #f59e0b;"></span><span>نگارش</span></div><span style="font-weight: bold;">۰٪</span></div>
       </div>
     </div>
   </div>
 
-  <!-- ۳. نقشه راه واقعی و مقایسه ملموس وضعیت کاربر -->
+  <!-- ۳. نقشه راه واقعی (پیش‌فرض: شروع از صفر) -->
   <div class="card">
     <div class="chart-header">
       <span class="chart-title">🗺️ جایگاه شما در دنیای واقعی</span>
@@ -131,28 +93,25 @@
     
     <div class="roadmap-container">
       <div class="roadmap-track-line"></div>
-      <div class="roadmap-track-progress"></div>
+      <div class="roadmap-track-progress" style="height: 0%;"></div>
 
-      <!-- ایستگاه ۱ (طی شده) -->
-      <div class="roadmap-step completed">
-        <div class="roadmap-node">✓</div>
-        <div class="roadmap-content">
-          <h5>مفاهیم پایه و مکالمات روزمره</h5>
-          <p>درک جملات ساده، خرید، معرفی خود و پاسخ به سوالات اولیه.</p>
-        </div>
-      </div>
-
-      <!-- ایستگاه ۲ (موقعیت فعلی) -->
       <div class="roadmap-step active">
         <div class="roadmap-node">📍</div>
         <div class="roadmap-content">
-          <h5>مکالمه روان و ارتباطات کاری/سفر</h5>
-          <p>گذران امور سفرهای خارجی و بیان نظرات بدون نیاز به مترجم.</p>
-          <div class="roadmap-pin-badge">📍 موقعیت فعلی شما (بین مکالمه روان و آزمون)</div>
+          <h5>مفاهیم پایه و مکالمات روزمره</h5>
+          <p>درک جملات ساده، خرید، معرفی خود و پاسخ به سوالات اولیه.</p>
+          <div class="roadmap-pin-badge">📍 نقطه شروع شما</div>
         </div>
       </div>
 
-      <!-- ایستگاه ۳ (پیش‌رو) -->
+      <div class="roadmap-step">
+        <div class="roadmap-node"></div>
+        <div class="roadmap-content">
+          <h5>مکالمه روان و ارتباطات کاری/سفر</h5>
+          <p>گذران امور سفرهای خارجی و بیان نظرات بدون نیاز به مترجم.</p>
+        </div>
+      </div>
+
       <div class="roadmap-step">
         <div class="roadmap-node"></div>
         <div class="roadmap-content">
@@ -179,7 +138,6 @@
     </div>
   </div>
 
-  <!-- دکمه حذف حساب کاربری -->
   <div class="card" style="border-color: rgba(239, 68, 68, 0.3);">
     <button type="button" class="btn btn-danger" onclick="openModal('modal-delete-acc')">🗑️ حذف حساب کاربری و تمام داده‌ها</button>
   </div>

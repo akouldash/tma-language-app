@@ -55,84 +55,11 @@
         </div>
       </div>
 
-      <!-- ========================================================= -->
-      <!-- کامپوننت داشبورد آموزشی (متصل به Supabase)               -->
-      <!-- ========================================================= -->
-      <div id="dash-main-container" style="display: none;">
-        
-        <!-- ۱. خلاصه مسیر -->
-        <div class="dash-card-summary">
-          <p id="dash-summary-text">در حال دریافت خلاصه مسیر...</p>
-        </div>
-
-        <!-- ۲. کارت درس فعال و درصد پیشرفت -->
-        <div class="active-lesson-card">
-          <div class="lesson-header">
-            <span class="badge-level" id="dash-lesson-badge">درس جاری</span>
-            <span class="lesson-topic" id="dash-lesson-topic">...</span>
-          </div>
-          <p class="lesson-desc" id="dash-lesson-desc">در حال بارگذاری اطلاعات درس...</p>
-          
-          <div class="progress-section">
-            <div class="progress-info">
-              <span>پیشرفت درس</span>
-              <span id="dash-progress-text">0%</span>
-            </div>
-            <div class="progress-bar-bg">
-              <div id="dash-progress-fill" class="progress-bar-fill" style="width: 0%;"></div>
-            </div>
-          </div>
-
-          <button type="button" class="btn-primary-action" onclick="onEnterLesson()">
-            <span>ورود به درس</span>
-            <span>❯</span>
-          </button>
-        </div>
-
-        <!-- ۳. وضعیت ۴ مهارت (گرید مدرن) -->
-        <div class="skills-grid" style="margin-bottom: 14px;">
-          <div class="skill-item">
-            <span class="skill-icon">🎧</span>
-            <span class="skill-title">شنیداری</span>
-            <p id="skill-listening-text" style="font-size: 0.75rem; color: var(--text-sub);">...</p>
-          </div>
-          <div class="skill-item">
-            <span class="skill-icon">📖</span>
-            <span class="skill-title">خوانش</span>
-            <p id="skill-reading-text" style="font-size: 0.75rem; color: var(--text-sub);">...</p>
-          </div>
-          <div class="skill-item">
-            <span class="skill-icon">🗣️</span>
-            <span class="skill-title">گفتار</span>
-            <p id="skill-speaking-text" style="font-size: 0.75rem; color: var(--text-sub);">...</p>
-          </div>
-          <div class="skill-item">
-            <span class="skill-icon">✍️</span>
-            <span class="skill-title">نگارش</span>
-            <p id="skill-writing-text" style="font-size: 0.75rem; color: var(--text-sub);">...</p>
-          </div>
-        </div>
-
-        <!-- ۴. زمان مطالعه امروز -->
-        <div class="dash-study-timer-card">
-          <h4>امروز چقدر وقت صرف آموزش کردید؟</h4>
-          <div style="display: flex; justify-content: center; gap: 10px;">
-            <div class="timer-unit"><div class="timer-val" id="timer-hours">۰</div><div class="timer-lbl">ساعت</div></div>
-            <div class="timer-unit"><div class="timer-val" id="timer-minutes">۰</div><div class="timer-lbl">دقیقه</div></div>
-            <div class="timer-unit"><div class="timer-val" id="timer-seconds">۰</div><div class="timer-lbl">ثانیه</div></div>
-          </div>
-        </div>
-
-        <!-- ۵. جمله انگیزشی -->
-        <div class="dash-card-quote">
-          <p id="dash-quote-text">...</p>
-        </div>
-      </div>
-
       <!-- دکمه حذف حساب کاربری -->
       <div class="card" style="border-color: rgba(239, 68, 68, 0.3);">
         <button type="button" class="btn btn-danger" onclick="openModal('modal-delete-acc')">🗑️ حذف حساب کاربری و تمام داده‌ها</button>
       </div>
+
     </main>
 
     <!-- ========================================================= -->
@@ -186,7 +113,66 @@
         
         <div style="background: rgba(0,0,0,0.15); border: 1px solid var(--card-border); border-radius: 14px; padding: 14px; text-align: right; margin: 12px 0; font-size: 12px; line-height: 1.7;" id="res-analysis-text"></div>
 
-        <button type="button" class="btn" onclick="switchTab('dashboard')">🚀 ورود به داشبورد آموزشی</button>
+        <button type="button" class="btn" onclick="switchTab('learn')">🚀 ورود به داشبورد آموزشی</button>
+      </div>
+
+      <!-- ========================================================= -->
+      <!-- کامپوننت اصلی آموزش (متصل به Supabase)                   -->
+      <!-- ========================================================= -->
+      <div id="dash-main-container" style="display: none;">
+        
+        <!-- ۱. خلاصه مسیر -->
+        <div class="dash-card-summary">
+          <p id="dash-summary-text">در حال دریافت خلاصه مسیر...</p>
+        </div>
+
+        <!-- ۲. نوار درصد پیشرفت درس جاری -->
+        <div class="dash-lesson-bar">
+          <div class="dash-lesson-info">
+            <span style="font-size: 12px;">پیشرفت درس:</span>
+            <div class="dash-progress-track">
+              <div id="dash-progress-fill" class="dash-progress-fill"></div>
+            </div>
+            <span id="dash-progress-text" style="font-size: 12px; font-weight: bold;">0%</span>
+          </div>
+          <button type="button" class="btn-enter-lesson" onclick="onEnterLesson()">ورود</button>
+        </div>
+
+        <!-- ۳. وضعیت ۴ مهارت (گرید ۲در۲) -->
+        <div class="dash-skills-grid">
+          <div class="skill-card">
+            <h4>شنیداری (Listening)</h4>
+            <p id="skill-listening-text">...</p>
+          </div>
+          <div class="skill-card">
+            <h4>خوانش (Reading)</h4>
+            <p id="skill-reading-text">...</p>
+          </div>
+          <div class="skill-card">
+            <h4>گفتار (Speaking)</h4>
+            <p id="skill-speaking-text">...</p>
+          </div>
+          <div class="skill-card">
+            <h4>نگارش (Writing)</h4>
+            <p id="skill-writing-text">...</p>
+          </div>
+        </div>
+
+        <!-- ۴. زمان مطالعه امروز -->
+        <div class="dash-study-timer-card">
+          <h4>امروز چقدر وقت صرف آموزش کردید؟</h4>
+          <div style="display: flex; justify-content: center; gap: 10px;">
+            <div class="timer-unit"><div class="timer-val" id="timer-hours">۰</div><div class="timer-lbl">ساعت</div></div>
+            <div class="timer-unit"><div class="timer-val" id="timer-minutes">۰</div><div class="timer-lbl">دقیقه</div></div>
+            <div class="timer-unit"><div class="timer-val" id="timer-seconds">۰</div><div class="timer-lbl">ثانیه</div></div>
+          </div>
+        </div>
+
+        <!-- ۵. جمله انگیزشی -->
+        <div class="dash-card-quote">
+          <p id="dash-quote-text">...</p>
+        </div>
+
       </div>
 
     </section>
@@ -276,7 +262,7 @@
     </div>
   </div>
 
-  <!-- فراخوانی مرتب و گام‌به‌گام اسکریپت‌های ماژولار -->
+  <!-- فراخوانی اسکریپت‌ها -->
   <script src="js/config.js"></script>
   <script src="js/utils.js"></script>
   <script src="js/timer.js"></script>

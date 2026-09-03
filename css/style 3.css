@@ -1,0 +1,197 @@
+/* =========================================================
+ * ۱. تعریف متغیرهای تم و رنگ‌بندی (تاریک / روشن)
+ * ========================================================= */
+:root {
+  --bg-main: #0f172a;
+  --card-bg: rgba(30, 41, 59, 0.75);
+  --card-border: rgba(255, 255, 255, 0.08);
+  --text-main: #f8fafc;
+  --text-sub: #94a3b8;
+  --primary: #8b5cf6;
+  --primary-gradient: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);
+  --accent: #38bdf8;
+  --danger: #ef4444;
+  --success: #10b981;
+  --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.36);
+}
+
+[data-theme="light"] {
+  --bg-main: #f1f5f9;
+  --card-bg: rgba(255, 255, 255, 0.9);
+  --card-border: rgba(0, 0, 0, 0.06);
+  --text-main: #0f172a;
+  --text-sub: #64748b;
+  --primary: #7c3aed;
+  --primary-gradient: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+  --accent: #0284c7;
+  --danger: #dc2626;
+  --success: #059669;
+  --shadow: 0 8px 24px 0 rgba(149, 157, 165, 0.15);
+}
+
+/* =========================================================
+ * ۲. استایل‌های پایه و بدنه
+ * ========================================================= */
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease; }
+body { background: var(--bg-main); color: var(--text-main); padding-bottom: 110px; user-select: none; }
+.container { padding: 16px; max-width: 480px; margin: 0 auto; }
+.hidden { display: none !important; }
+
+/* هدر و کارت‌ها */
+.top-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 4px; margin-bottom: 12px; }
+.theme-toggle-btn { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; box-shadow: var(--shadow); color: var(--text-main); }
+.card { background: var(--card-bg); backdrop-filter: blur(12px); border: 1px solid var(--card-border); border-radius: 20px; padding: 18px; margin-bottom: 14px; box-shadow: var(--shadow); }
+
+/* مشخصات کاربر */
+.user-profile-info { display: flex; flex-direction: column; justify-content: center; }
+.user-fullname { font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 2px; }
+.user-subtext { font-size: 11px; color: var(--text-sub); opacity: 0.85; margin-bottom: 4px; direction: ltr; text-align: right; }
+.user-level-badge { font-size: 11px; color: var(--accent); font-weight: 600; }
+
+/* معکوس‌شمار اشتراک */
+.timer-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.info-btn { cursor: pointer; font-size: 16px; opacity: 0.8; }
+.timer-box { display: flex; justify-content: space-around; direction: ltr; margin-top: 10px; text-align: center; }
+.timer-unit { background: rgba(0,0,0,0.15); padding: 8px 12px; border-radius: 12px; min-width: 60px; }
+.timer-val { font-size: 18px; font-weight: bold; color: var(--accent); }
+.timer-lbl { font-size: 10px; color: var(--text-sub); }
+
+/* تب‌ها */
+.tab-content { display: none; }
+.tab-content.active { display: block; animation: fadeIn 0.25s ease-in-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+/* =========================================================
+ * ۳. استایل‌های اختصاصی داشبورد آموزشی
+ * ========================================================= */
+.dash-card-summary { background: rgba(99, 102, 241, 0.12); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 18px; padding: 16px; text-align: center; margin-bottom: 14px; }
+.dash-card-summary p { margin: 0; color: var(--text-main); font-size: 0.9rem; line-height: 1.5; }
+
+.dash-lesson-bar { background: var(--primary-gradient); border-radius: 18px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; color: #ffffff; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3); margin-bottom: 14px; }
+.dash-lesson-info { display: flex; align-items: center; gap: 10px; flex-grow: 1; }
+.dash-progress-track { width: 90px; height: 8px; background: rgba(255, 255, 255, 0.25); border-radius: 10px; overflow: hidden; }
+.dash-progress-fill { height: 100%; background: #22c55e; width: 0%; transition: width 0.5s ease; }
+.btn-enter-lesson { background: #ffffff; color: #4f46e5; border: none; padding: 8px 16px; border-radius: 12px; font-weight: bold; cursor: pointer; }
+
+.dash-skills-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.skill-card { border-radius: 16px; padding: 12px; text-align: right; background: rgba(255,255,255,0.03); border: 1px solid var(--card-border); }
+.skill-card h4 { margin-bottom: 6px; font-size: 0.85rem; color: var(--accent); }
+.skill-card p { margin: 0; font-size: 0.75rem; color: var(--text-sub); line-height: 1.4; }
+
+.dash-study-timer-card { background: rgba(0, 0, 0, 0.15); border-radius: 18px; padding: 14px; text-align: center; margin-bottom: 14px; border: 1px solid var(--card-border); }
+.dash-study-timer-card h4 { margin-bottom: 10px; color: var(--text-main); font-size: 0.85rem; }
+
+.dash-card-quote { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 18px; padding: 14px; text-align: center; margin-bottom: 14px; }
+.dash-card-quote p { margin: 0; color: var(--success); font-size: 0.85rem; font-weight: 500; }
+
+/* ساختار جدید کارت داشبورد (فاز ۴) - کاملاً هماهنگ با متغیرهای تم */
+.dashboard-card-wrapper { display: flex; flex-direction: column; gap: 14px; margin-bottom: 14px; }
+.active-lesson-card { background: var(--card-bg); backdrop-filter: blur(12px); border: 1px solid var(--card-border); border-radius: 20px; padding: 18px; color: var(--text-main); box-shadow: var(--shadow); }
+.lesson-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.badge-level { background: var(--success); color: #ffffff; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 20px; }
+.lesson-topic { font-weight: 700; font-size: 1rem; color: var(--text-main); }
+.lesson-desc { font-size: 0.85rem; color: var(--text-sub); margin-bottom: 16px; line-height: 1.5; }
+.progress-section { margin-bottom: 16px; }
+.progress-info { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-sub); margin-bottom: 6px; }
+.progress-bar-bg { width: 100%; height: 8px; background: rgba(0, 0, 0, 0.15); border-radius: 10px; overflow: hidden; }
+.progress-bar-fill { height: 100%; background: var(--primary-gradient); border-radius: 10px; transition: width 0.4s ease; }
+.btn-primary-action { width: 100%; background: var(--primary-gradient); color: #ffffff; border: none; padding: 12px 16px; border-radius: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; box-shadow: var(--shadow); }
+.btn-primary-action:active { opacity: 0.9; transform: scale(0.99); }
+
+.skills-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.skill-item { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 6px; backdrop-filter: blur(12px); }
+.skill-icon { font-size: 1.2rem; }
+.skill-title { font-size: 0.85rem; font-weight: 600; color: var(--text-main); }
+.skill-level-bar { height: 6px; width: 100%; background: rgba(0, 0, 0, 0.15); border-radius: 4px; position: relative; overflow: hidden; }
+.skill-level-bar::after { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: var(--skill-val, 0%); background: var(--accent); border-radius: 4px; transition: width 0.4s ease; }
+
+/* =========================================================
+ * ۴. استایل‌های آزمون تعیین سطح و مدال‌ها
+ * ========================================================= */
+.quiz-progress-bar { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; margin: 12px 0 18px 0; }
+.quiz-progress-fill { height: 100%; background: var(--primary-gradient); width: 0%; transition: width 0.3s ease; }
+.quiz-options { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+.quiz-option-btn { padding: 14px 16px; background: rgba(255,255,255,0.04); border: 1px solid var(--card-border); border-radius: 14px; color: var(--text-main); text-align: right; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: space-between; }
+.quiz-option-btn:hover, .quiz-option-btn.selected { border-color: var(--primary); background: rgba(139, 92, 246, 0.15); }
+
+.ai-loading-box { text-align: center; padding: 30px 10px; }
+.ai-spinner { width: 48px; height: 48px; border: 4px solid rgba(255,255,255,0.1); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px auto; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* منوی شناور پایین */
+.nav-bar { position: fixed; bottom: 16px; left: 0; right: 0; max-width: 280px; margin: 0 auto; background: transparent; border: none; display: flex; justify-content: space-between; align-items: flex-end; height: 70px; z-index: 100; pointer-events: none; }
+.nav-item { pointer-events: auto; border: 1px solid var(--card-border); background: var(--card-bg); color: var(--text-sub); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: var(--shadow); backdrop-filter: blur(12px); }
+.nav-item.side-btn { width: 44px; height: 44px; font-size: 20px; margin-bottom: 4px; }
+.nav-item.side-btn.active { color: var(--primary); border-color: var(--primary); transform: translateY(-2px); }
+.nav-item.learn-center { width: 68px; height: 68px; background: var(--primary-gradient); color: #fff; font-size: 30px; box-shadow: 0 10px 28px rgba(139, 92, 246, 0.55); border: 3px solid var(--bg-main); transform: translateY(-10px); }
+.nav-item.learn-center.active { transform: translateY(-14px) scale(1.06); }
+
+/* پاپ‌آپ‌ها و دکمه‌ها */
+.settings-list { display: flex; flex-direction: column; gap: 10px; }
+.setting-item-btn { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; color: var(--text-main); cursor: pointer; }
+.setting-item-left { display: flex; align-items: center; gap: 12px; font-weight: 500; font-size: 14px; }
+.chevron { color: var(--text-sub); font-size: 14px; }
+
+.btn { width: 100%; padding: 14px; background: var(--primary-gradient); color: #fff; border: none; border-radius: 14px; font-weight: bold; cursor: pointer; margin-top: 8px; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-secondary { background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-main); }
+.btn-danger { background: var(--danger); }
+.input-field { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--card-border); background: rgba(0,0,0,0.15); color: var(--text-main); margin-bottom: 10px; font-size: 13px; }
+
+.modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(6px); z-index: 200; align-items: center; justify-content: center; padding: 16px; }
+.modal.active { display: flex; animation: fadeIn 0.2s ease-out; }
+.modal-content { background: var(--bg-main); border: 1px solid var(--card-border); border-radius: 24px; padding: 22px; max-width: 420px; width: 100%; max-height: 85vh; overflow-y: auto; box-shadow: var(--shadow); }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--card-border); padding-bottom: 10px; }
+.modal-close { background: none; border: none; font-size: 20px; color: var(--text-sub); cursor: pointer; }
+
+/* =========================================================
+ * ۵. کدهای اختصاصی داشبورد تحلیلی (نمودار میله‌ای، دونات و نقشه راه)
+ * ========================================================= */
+
+/* --- نمودار میله‌ای (Bar Chart) --- */
+.chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.chart-title { font-size: 0.9rem; font-weight: bold; color: var(--text-main); }
+.chart-badge { font-size: 0.75rem; background: rgba(139, 92, 246, 0.15); color: var(--primary); padding: 4px 10px; border-radius: 12px; font-weight: 600; }
+
+.bar-chart-container { display: flex; align-items: flex-end; justify-content: space-between; height: 130px; padding-top: 20px; gap: 6px; }
+.bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; gap: 6px; }
+.bar-wrapper { width: 100%; height: 85px; display: flex; align-items: flex-end; justify-content: center; position: relative; }
+.bar-fill { width: 14px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1); position: relative; }
+.bar-fill.active { background: var(--primary-gradient); box-shadow: 0 0 12px rgba(168, 85, 247, 0.4); }
+.bar-fill.peak::after { content: ''; position: absolute; top: -6px; left: 50%; transform: translateX(-50%); width: 6px; height: 6px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 8px var(--accent); }
+.bar-label { font-size: 0.68rem; color: var(--text-sub); }
+
+/* --- نمودار گرد دونات (Donut Chart) --- */
+.donut-section { display: flex; align-items: center; justify-content: space-around; gap: 12px; margin-top: 8px; }
+.donut-chart-wrapper { position: relative; width: 110px; height: 110px; flex-shrink: 0; }
+.donut-chart-wrapper svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.donut-bg { fill: none; stroke: rgba(255, 255, 255, 0.08); stroke-width: 10; }
+.donut-segment { fill: none; stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset 0.8s ease; }
+.donut-center-text { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.donut-percent { font-size: 1.1rem; font-weight: bold; color: var(--text-main); }
+.donut-subtext { font-size: 0.65rem; color: var(--text-sub); }
+
+.skills-legend { display: flex; flex-direction: column; gap: 8px; flex-grow: 1; }
+.legend-item { display: flex; align-items: center; justify-content: space-between; font-size: 0.78rem; color: var(--text-main); }
+.legend-dot-group { display: flex; align-items: center; gap: 6px; }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+/* --- نقشه راه ملموس واقعی (Real-World Roadmap) --- */
+.roadmap-container { position: relative; padding: 10px 0; display: flex; flex-direction: column; gap: 18px; margin-top: 10px; }
+.roadmap-track-line { position: absolute; top: 15px; bottom: 15px; right: 19px; width: 3px; background: rgba(255, 255, 255, 0.1); border-radius: 2px; }
+.roadmap-track-progress { position: absolute; top: 15px; right: 19px; width: 3px; height: 55%; background: var(--primary-gradient); border-radius: 2px; transition: height 0.5s ease; }
+
+.roadmap-step { position: relative; display: flex; align-items: flex-start; gap: 14px; padding-right: 40px; }
+.roadmap-node { position: absolute; right: 11px; top: 2px; width: 18px; height: 18px; border-radius: 50%; background: var(--bg-main); border: 2px solid var(--text-sub); display: flex; align-items: center; justify-content: center; font-size: 9px; z-index: 2; transition: all 0.3s ease; }
+.roadmap-step.completed .roadmap-node { border-color: var(--success); background: var(--success); color: #fff; }
+.roadmap-step.active .roadmap-node { border-color: var(--accent); background: var(--primary); box-shadow: 0 0 10px var(--primary); animation: pulse 1.8s infinite; }
+
+.roadmap-content h5 { font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 2px; }
+.roadmap-content p { font-size: 0.73rem; color: var(--text-sub); line-height: 1.4; }
+.roadmap-pin-badge { display: inline-flex; align-items: center; gap: 4px; background: rgba(56, 189, 248, 0.15); color: var(--accent); border: 1px solid rgba(56, 189, 248, 0.3); font-size: 0.68rem; padding: 2px 8px; border-radius: 10px; font-weight: bold; margin-top: 4px; }
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.7); }
+  70% { box-shadow: 0 0 0 8px rgba(139, 92, 246, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); }
+}
